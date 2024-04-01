@@ -26,7 +26,7 @@ return {
         require("mason").setup()
         require("mason-lspconfig").setup({
             ensure_installed = {
-                'tsserver', 'golangci_lint_ls', 'gopls', 'pyright', 'lua_ls', 'rust_analyzer'
+                'tsserver', 'golangci_lint_ls', 'gopls', 'pylsp', 'lua_ls', 'rust_analyzer'
             },
             handlers = {
                 function(server_name) -- default handler (optional)
