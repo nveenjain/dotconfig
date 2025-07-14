@@ -1,10 +1,12 @@
 return {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    config = function() 
+    -- disable for vscode
+    cond = vim.g.vscode == nil,
+    config = function()
         require('nvim-treesitter.configs').setup ({
             -- A list of parser names, or "all" (the five listed parsers should always be installed)
-            ensure_installed = { "javascript", "typescript", "go", "rust", "lua", "vim", "vimdoc", "query" },
+            ensure_installed = { "javascript", "typescript", "go", "rust", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline" },
 
             -- Install parsers synchronously (only applied to `ensure_installed`)
             sync_install = false,
@@ -34,14 +36,8 @@ return {
                 additional_vim_regex_highlighting = false,
             },
         })
-        local treesitter_parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-        treesitter_parser_config.templ = {
-            install_info = {
-                url = "https://github.com/vrischmann/tree-sitter-templ.git",
-                files = {"src/parser.c", "src/scanner.c"},
-                branch = "master",
-            },
-        }
+        -- Custom parser configuration
+        vim.treesitter.language.register('templ', 'templ')
     end
 
 }

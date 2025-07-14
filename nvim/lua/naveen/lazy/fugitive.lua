@@ -32,6 +32,13 @@ return {
         })
 
         vim.keymap.set("n", "<leader>gs", vim.cmd.Git);
+        
+        -- Git worktree keybindings
+        local worktree = require("naveen.git-worktree")
+        vim.keymap.set("n", "<leader>gwc", worktree.create_worktree, { desc = "Create git worktree" })
+        vim.keymap.set("n", "<leader>gwr", worktree.remove_worktree, { desc = "Remove git worktree" })
+        vim.keymap.set("n", "<leader>gwl", worktree.list_worktrees, { desc = "List git worktrees" })
+        vim.keymap.set("n", "<leader>gws", worktree.set_worktree_directory, { desc = "Set worktree directory" })
         vim.keymap.set("n", "gu", "<cmd>diffget //2<CR>")
         vim.keymap.set("n", "gh", "<cmd>diffget //3<CR>")
     end

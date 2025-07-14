@@ -13,6 +13,8 @@ return {
         "j-hui/fidget.nvim",
     },
 
+    -- disable for vscode
+    cond = vim.g.vscode == nil,
     config = function()
         local cmp = require('cmp')
         local cmp_lsp = require("cmp_nvim_lsp")
@@ -26,7 +28,7 @@ return {
         require("mason").setup()
         require("mason-lspconfig").setup({
             ensure_installed = {
-                'tsserver', 'golangci_lint_ls', 'gopls', 'pylsp', 'lua_ls', 'rust_analyzer'
+                'ts_ls', 'golangci_lint_ls', 'gopls', 'pylsp', 'lua_ls', 'rust_analyzer'
             },
             handlers = {
                 function(server_name) -- default handler (optional)
@@ -47,15 +49,23 @@ return {
                         }
                     }
                 end,
-                --[[
-                ["gopls"] = function ()
+                ["gopls"] = function()
                     local lspconfig = require('lspconfig')
-                    capabilities.workspace={didChangeWatchedFiles={dynamicRegistration = true }}-- for nvim v0.9.
                     lspconfig.gopls.setup {
                         capabilities = capabilities,
+                        settings = {
+                            gopls = {
+                                staticcheck = true,
+                                gofumpt = true,
+                                usePlaceholders = true,
+                                analyses = {
+                                    unusedparams = true,
+                                    shadow = true,
+                                },
+                            },
+                        },
                     }
                 end,
-                --]]
             }
         })
 

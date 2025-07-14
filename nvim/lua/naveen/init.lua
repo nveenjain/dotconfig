@@ -1,5 +1,7 @@
 require("naveen.remap")
 require("naveen.set")
+require("naveen.lsp-file-watcher-fix").setup()
+require("naveen.lsp-shutdown-fix")
 require("naveen.lazy_init")
 
 
@@ -11,6 +13,10 @@ local yank_group = augroup('HighlightYank', {})
 
 function R(name)
     require("plenary.reload").reload_module(name)
+end
+
+if vim.g.vscode then
+    require "naveen.cursor"
 end
 
 vim.filetype.add({
@@ -30,6 +36,9 @@ autocmd('TextYankPost', {
     end,
 })
 
+vim.api.nvim_create_user_command('E', 'Explore', {})
+vim.api.nvim_create_user_command('Eq', 'EditQuery', {})
+
 autocmd({ "BufWritePre" }, {
     group = NaveenJGroup,
     pattern = "*",
@@ -39,7 +48,12 @@ autocmd({ "BufWritePre" }, {
 autocmd("BufWritePre", {
     pattern = "*.go",
     callback = function()
-        local params = vim.lsp.util.make_range_params()
+        -- Get the first attached LSP client to determine position encoding
+        local clients = vim.lsp.get_clients({ bufnr = 0 })
+        local client = clients[1]
+        if not client then return end
+        
+        local params = vim.lsp.util.make_range_params(nil, client.offset_encoding)
         params.context = { only = { "source.organizeImports" } }
         -- buf_request_sync defaults to a 1000ms timeout. Depending on your
         -- machine and codebase, you may want longer. Add an additional
@@ -56,6 +70,31 @@ autocmd("BufWritePre", {
             end
         end
         vim.lsp.buf.format({ async = false })
+        
+        -- Run golines on the current buffer
+        local fileName = vim.fn.expand("%")
+        local cmd = string.format("golines -w -m 88 %s", fileName)
+        vim.fn.system(cmd)
+        -- Reload the buffer to reflect golines changes
+        vim.cmd("edit!")
+    end
+})
+
+autocmd("BufWritePre", {
+    pattern = "*.py",
+    callback = function()
+        -- Only try LSP format if there's an active LSP client
+        local clients = vim.lsp.get_clients({ bufnr = 0 })
+        if #clients > 0 then
+            vim.lsp.buf.format({ async = false })
+        end
+        
+        -- Run black on the current buffer
+        local fileName = vim.fn.expand("%")
+        local cmd = string.format("black --line-length 88 --quiet %s", vim.fn.shellescape(fileName))
+        vim.fn.system(cmd)
+        -- Reload the buffer to reflect black changes
+        vim.cmd("edit!")
     end
 })
 

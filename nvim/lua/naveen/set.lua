@@ -25,5 +25,19 @@ vim.opt.isfname:append("@-@")
 
 vim.opt.updatetime = 50
 
-vim.opt.colorcolumn = "80"
+vim.opt.colorcolumn = ""
 
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.hidden = true
+
+-- UI improvements
+vim.opt.fillchars = {
+    vert = " ",     -- vertical separator
+    horiz = " ",    -- horizontal separator
+    horizup = " ",
+    horizdown = " ",
+    vertleft = " ",
+    vertright = " ",
+    verthoriz = " ",
+}

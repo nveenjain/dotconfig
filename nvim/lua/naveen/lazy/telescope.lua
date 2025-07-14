@@ -4,6 +4,8 @@ return {
         dependencies = {
             'plenary'
         },
+    -- disable for vscode
+    cond = vim.g.vscode == nil,
         config = function()
             local builtin = require('telescope.builtin')
             vim.keymap.set('n', '<leader>pf', builtin.find_files, {})
