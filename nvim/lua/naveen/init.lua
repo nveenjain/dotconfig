@@ -102,7 +102,37 @@ autocmd('LspAttach', {
     group = NaveenJGroup,
     callback = function(e)
         local opts = { buffer = e.buf }
-        vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
+        vim.keymap.set("n", "gd", function()
+            local params = vim.lsp.util.make_position_params()
+            vim.lsp.buf_request(0, 'textDocument/definition', params, function(err, result, ctx, config)
+                if err then
+                    vim.notify('Error when finding definition: ' .. err.message, vim.log.levels.ERROR)
+                    return
+                end
+                
+                if not result or vim.tbl_isempty(result) then
+                    vim.notify('No definition found', vim.log.levels.INFO)
+                    return
+                end
+                
+                -- Convert result to list if it's a single item
+                if not vim.tbl_islist(result) then
+                    result = { result }
+                end
+                
+                -- If only one result, jump directly
+                if #result == 1 then
+                    vim.lsp.util.jump_to_location(result[1], 'utf-8', true)
+                else
+                    -- Multiple results, use quickfix
+                    vim.fn.setqflist({}, ' ', {
+                        title = 'LSP definitions',
+                        items = vim.lsp.util.locations_to_items(result, 'utf-8')
+                    })
+                    vim.cmd('copen')
+                end
+            end)
+        end, opts)
         vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
         vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts)
         vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts)

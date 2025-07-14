@@ -13,7 +13,6 @@ return {
         },
         config = function(_, opts)
             require("CopilotChat").setup(opts)
-            require("CopilotChat.integrations.cmp").setup()
         end,
         keys = {
             { "<leader>aC", ":CopilotChat<CR>", desc = "Copilot Chat" },
