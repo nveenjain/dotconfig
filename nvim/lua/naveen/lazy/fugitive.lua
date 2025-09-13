@@ -1,7 +1,9 @@
 return {
     "tpope/vim-fugitive",
+    keys = {
+        { "<leader>gs", "<cmd>Git<cr>", desc = "Git status" },
+    },
     config = function()
-        vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
 
         local naveen_Fugitive = vim.api.nvim_create_augroup("naveen_Fugitive", {})
 
@@ -30,8 +32,6 @@ return {
                 vim.keymap.set("n", "<leader>t", ":Git push -u origin ", opts);
             end,
         })
-
-        vim.keymap.set("n", "<leader>gs", vim.cmd.Git);
         
         -- Git branch creation
         vim.keymap.set("n", "<leader>gb", function()

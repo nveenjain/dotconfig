@@ -25,7 +25,7 @@ vim.opt.isfname:append("@-@")
 
 vim.opt.updatetime = 50
 
-vim.opt.colorcolumn = ""
+vim.opt.colorcolumn = "88"
 
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
@@ -41,3 +41,8 @@ vim.opt.fillchars = {
     vertright = " ",
     verthoriz = " ",
 }
+
+-- Increase syntax highlighting limits for large files
+vim.opt.synmaxcol = 300     -- Syntax highlight up to 300 columns (default is 3000)
+vim.opt.redrawtime = 10000  -- Allow more time for syntax highlighting (default is 2000ms)
+vim.g.syntax_on = true      -- Ensure syntax is enabled
