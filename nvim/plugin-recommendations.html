@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neovim Plugin Recommendations</title>
+    <style>
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1e293b;
+            --bg-card: #0f172a;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #334155;
+            --code-bg: #1e293b;
+            --gradient-1: #38bdf8;
+            --gradient-2: #818cf8;
+            --gradient-3: #c084fc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 50%, var(--gradient-3) 100%);
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 39, 0.7);
+            z-index: 1;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Navigation */
+        .nav {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(15, 23, 42, 0.9);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .nav-item {
+            padding: 1rem 0;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* Plugin Cards */
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .plugin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .plugin-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plugin-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gradient-1), var(--gradient-2));
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+        }
+
+        .plugin-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.1);
+        }
+
+        .plugin-card:hover::before {
+            transform: translateX(0);
+        }
+
+        .plugin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .plugin-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .plugin-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-essential {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-recommended {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-optional {
+            background-color: rgba(148, 163, 184, 0.2);
+            color: var(--text-secondary);
+        }
+
+        .plugin-description {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .plugin-features {
+            margin-bottom: 20px;
+        }
+
+        .plugin-features h4 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+        }
+
+        .plugin-config {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .config-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .config-toggle:hover {
+            color: var(--accent);
+        }
+
+        .config-content {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .config-content.show {
+            display: block;
+        }
+
+        .code-block {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-block pre {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        /* Installation Guide */
+        .installation-guide {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .guide-step {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .step-content h3 {
+            margin-bottom: 10px;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .plugin-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-content {
+                gap: 1rem;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .plugin-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>🚀 Neovim Plugin Recommendations</h1>
+            <p class="subtitle">Curated plugins to enhance your development workflow based on your current setup</p>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="nav-item active" data-section="overview">Overview</div>
+            <div class="nav-item" data-section="essential">Essential</div>
+            <div class="nav-item" data-section="productivity">Productivity</div>
+            <div class="nav-item" data-section="ui">UI/UX</div>
+            <div class="nav-item" data-section="language">Language</div>
+            <div class="nav-item" data-section="advanced">Advanced</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Overview Section -->
+        <div id="overview" class="section">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">32</div>
+                    <div class="stat-label">Current Plugins</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24</div>
+                    <div class="stat-label">Recommended Additions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Essential Upgrades</div>
+                </div>
+            </div>
+
+            <div class="installation-guide">
+                <h2 style="margin-bottom: 25px;">Quick Installation Guide</h2>
+                <div class="guide-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Add to your lazy config</h3>
+                        <p>Copy the plugin configuration to a new file in <code>~/.config/nvim/lua/naveen/lazy/</code></p>
+                    </div>
+                </div>
+                <div class="guide-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Restart Neovim</h3>
+                        <p>Exit and reopen Neovim to reload the configuration</p>
+                    </div>
+                </div>
+                <div class="guide-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Install plugins</h3>
+                        <p>Run <code>:Lazy sync</code> to install and update all plugins</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Essential Plugins -->
+        <div id="essential" class="section" style="display: none;">
+            <div class="section-header">
+                <div class="section-icon">⚡</div>
+                <h2 class="section-title">Essential Plugins</h2>
+            </div>
+
+            <div class="plugin-grid">
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">nvim-surround</h3>
+                        <span class="plugin-badge badge-essential">Essential</span>
+                    </div>
+                    <p class="plugin-description">Add/change/delete surrounding delimiter pairs with ease. A modern Lua implementation of tpope's vim-surround.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Dot-repeat support</li>
+                            <li>Tree-sitter integration</li>
+                            <li>Customizable surroundings</li>
+                            <li>Visual mode support</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "kylechui/nvim-surround",
+    version = "*",
+    event = "VeryLazy",
+    config = function()
+        require("nvim-surround").setup({
+            keymaps = {
+                insert = "<C-g>s",
+                insert_line = "<C-g>S",
+                normal = "ys",
+                normal_cur = "yss",
+                normal_line = "yS",
+                normal_cur_line = "ySS",
+                visual = "S",
+                visual_line = "gS",
+                delete = "ds",
+                change = "cs",
+            },
+        })
+    end
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">oil.nvim</h3>
+                        <span class="plugin-badge badge-essential">Essential</span>
+                    </div>
+                    <p class="plugin-description">A file explorer that lets you edit your filesystem like a normal Neovim buffer. Perfect replacement for netrw.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Edit filesystem like text</li>
+                            <li>Batch rename support</li>
+                            <li>Preview floating windows</li>
+                            <li>SSH/remote filesystem support</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "stevearc/oil.nvim",
+    opts = {},
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+        require("oil").setup({
+            default_file_explorer = true,
+            view_options = {
+                show_hidden = true,
+            },
+            keymaps = {
+                ["g?"] = "actions.show_help",
+                ["<CR>"] = "actions.select",
+                ["<C-v>"] = "actions.select_vsplit",
+                ["<C-x>"] = "actions.select_split",
+                ["<C-t>"] = "actions.select_tab",
+                ["<C-p>"] = "actions.preview",
+                ["<C-c>"] = "actions.close",
+                ["-"] = "actions.parent",
+                ["_"] = "actions.open_cwd",
+            },
+        })
+        vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+    end,
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">flash.nvim</h3>
+                        <span class="plugin-badge badge-essential">Essential</span>
+                    </div>
+                    <p class="plugin-description">Navigate your code with search labels, enhanced character motions and Treesitter integration.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Jump to any word with 2 chars</li>
+                            <li>Enhanced f/t motions</li>
+                            <li>Treesitter navigation</li>
+                            <li>Search integration</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    opts = {},
+    keys = {
+        { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+        { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+        { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+        { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+        { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">which-key.nvim</h3>
+                        <span class="plugin-badge badge-essential">Essential</span>
+                    </div>
+                    <p class="plugin-description">Displays a popup with possible key bindings of the command you started typing.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Show keybindings in popup</li>
+                            <li>Group related mappings</li>
+                            <li>Customizable layout</li>
+                            <li>Marks & registers display</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    init = function()
+        vim.o.timeout = true
+        vim.o.timeoutlen = 300
+    end,
+    opts = {
+        plugins = {
+            marks = true,
+            registers = true,
+            spelling = {
+                enabled = true,
+                suggestions = 20,
+            },
+        },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productivity Plugins -->
+        <div id="productivity" class="section" style="display: none;">
+            <div class="section-header">
+                <div class="section-icon">🎯</div>
+                <h2 class="section-title">Productivity Boosters</h2>
+            </div>
+
+            <div class="plugin-grid">
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">toggleterm.nvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">Persist and toggle multiple terminals during an editing session. Great for running tests and builds.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Multiple terminal instances</li>
+                            <li>Floating & split terminals</li>
+                            <li>Send commands to terminal</li>
+                            <li>Custom terminal functions</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "akinsho/toggleterm.nvim",
+    version = "*",
+    config = function()
+        require("toggleterm").setup({
+            size = 20,
+            open_mapping = [[<c-\>]],
+            direction = "float",
+            float_opts = {
+                border = "curved",
+            },
+        })
+        
+        -- Custom terminals
+        local Terminal = require("toggleterm.terminal").Terminal
+        local lazygit = Terminal:new({ cmd = "lazygit", hidden = true })
+        
+        function _lazygit_toggle()
+            lazygit:toggle()
+        end
+        
+        vim.api.nvim_set_keymap("n", "<leader>lg", "<cmd>lua _lazygit_toggle()<CR>", {noremap = true, silent = true})
+    end
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">vim-test</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">Run your tests at the speed of thought. Works with Go, Python, JavaScript and more.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Run nearest test</li>
+                            <li>Run file tests</li>
+                            <li>Run last test</li>
+                            <li>Visit last test file</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "vim-test/vim-test",
+    keys = {
+        { "<leader>tn", "<cmd>TestNearest<cr>", desc = "Test Nearest" },
+        { "<leader>tf", "<cmd>TestFile<cr>", desc = "Test File" },
+        { "<leader>ts", "<cmd>TestSuite<cr>", desc = "Test Suite" },
+        { "<leader>tl", "<cmd>TestLast<cr>", desc = "Test Last" },
+        { "<leader>tv", "<cmd>TestVisit<cr>", desc = "Test Visit" },
+    },
+    config = function()
+        vim.g["test#strategy"] = "toggleterm"
+        vim.g["test#go#runner"] = "gotest"
+        vim.g["test#python#runner"] = "pytest"
+    end,
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">todo-comments.nvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">Highlight, list and search todo comments in your projects. Integrates with Telescope and Trouble.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Highlight TODO, FIXME, etc</li>
+                            <li>Search todos with Telescope</li>
+                            <li>List todos in Trouble</li>
+                            <li>Custom keywords & colors</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {
+        signs = true,
+        keywords = {
+            FIX = { icon = " ", color = "error", alt = { "FIXME", "BUG", "FIXIT", "ISSUE" } },
+            TODO = { icon = " ", color = "info" },
+            HACK = { icon = " ", color = "warning" },
+            WARN = { icon = " ", color = "warning", alt = { "WARNING", "XXX" } },
+            PERF = { icon = " ", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE" } },
+            NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+        },
+    },
+    keys = {
+        { "<leader>st", "<cmd>TodoTelescope<cr>", desc = "Search Todos" },
+        { "<leader>xt", "<cmd>TodoTrouble<cr>", desc = "Todo Trouble" },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">vim-fugitive-blame.nvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">Enhanced git blame with virtual text. Shows blame info inline without opening a separate window.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Inline blame display</li>
+                            <li>Toggle with keybind</li>
+                            <li>Customizable format</li>
+                            <li>Performance optimized</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "f-person/git-blame.nvim",
+    event = "VeryLazy",
+    opts = {
+        enabled = false, -- Enable with toggle
+        date_format = "%Y-%m-%d",
+        message_template = " <author> • <date> • <summary>",
+        virtual_text_column = 80,
+    },
+    keys = {
+        { "<leader>gB", "<cmd>GitBlameToggle<cr>", desc = "Toggle Git Blame" },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UI/UX Plugins -->
+        <div id="ui" class="section" style="display: none;">
+            <div class="section-header">
+                <div class="section-icon">🎨</div>
+                <h2 class="section-title">UI/UX Enhancements</h2>
+            </div>
+
+            <div class="plugin-grid">
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">noice.nvim</h3>
+                        <span class="plugin-badge badge-optional">Optional</span>
+                    </div>
+                    <p class="plugin-description">Highly experimental plugin that replaces the UI for messages, cmdline and popupmenu.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Floating cmdline</li>
+                            <li>Better notifications</li>
+                            <li>Search count virtual text</li>
+                            <li>LSP progress integration</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    opts = {
+        lsp = {
+            override = {
+                ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+                ["vim.lsp.util.stylize_markdown"] = true,
+                ["cmp.entry.get_documentation"] = true,
+            },
+        },
+        presets = {
+            bottom_search = true,
+            command_palette = true,
+            long_message_to_split = true,
+            inc_rename = false,
+            lsp_doc_border = false,
+        },
+    },
+    dependencies = {
+        "MunifTanjim/nui.nvim",
+        "rcarriga/nvim-notify",
+    }
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">indent-blankline.nvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">Adds indentation guides to all lines (including empty lines). Integrates with Treesitter.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Context highlighting</li>
+                            <li>Scope indicators</li>
+                            <li>Rainbow indentation</li>
+                            <li>Virtual text support</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    opts = {
+        indent = {
+            char = "│",
+            tab_char = "│",
+        },
+        scope = {
+            enabled = true,
+            show_start = true,
+            show_end = false,
+        },
+        exclude = {
+            filetypes = {
+                "help",
+                "dashboard",
+                "lazy",
+                "mason",
+                "notify",
+                "toggleterm",
+            },
+        },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">lualine.nvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">A blazing fast and easy to configure Neovim statusline written in Lua.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>LSP status integration</li>
+                            <li>Git information</li>
+                            <li>Custom components</li>
+                            <li>Multiple themes</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "nvim-lualine/lualine.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {
+        options = {
+            theme = "auto",
+            component_separators = { left = "", right = "" },
+            section_separators = { left = "", right = "" },
+        },
+        sections = {
+            lualine_a = { "mode" },
+            lualine_b = { "branch", "diff", "diagnostics" },
+            lualine_c = { "filename" },
+            lualine_x = { "encoding", "fileformat", "filetype" },
+            lualine_y = { "progress" },
+            lualine_z = { "location" }
+        },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">bufferline.nvim</h3>
+                        <span class="plugin-badge badge-optional">Optional</span>
+                    </div>
+                    <p class="plugin-description">A snazzy buffer line with tabpage integration. Shows open buffers as tabs.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Buffer sorting</li>
+                            <li>Mouse support</li>
+                            <li>Diagnostics indicators</li>
+                            <li>Custom areas</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "akinsho/bufferline.nvim",
+    version = "*",
+    dependencies = "nvim-tree/nvim-web-devicons",
+    opts = {
+        options = {
+            diagnostics = "nvim_lsp",
+            separator_style = "slant",
+            always_show_bufferline = false,
+            diagnostics_indicator = function(count, level)
+                local icon = level:match("error") and " " or " "
+                return " " .. icon .. count
+            end,
+        },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Language Specific -->
+        <div id="language" class="section" style="display: none;">
+            <div class="section-header">
+                <div class="section-icon">🔧</div>
+                <h2 class="section-title">Language Specific</h2>
+            </div>
+
+            <div class="plugin-grid">
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">go.nvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">Modern Go development plugin with all the features you need: formatting, testing, debugging, and more.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Auto imports on save</li>
+                            <li>Test generation</li>
+                            <li>Struct tag manipulation</li>
+                            <li>Interface implementation</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "ray-x/go.nvim",
+    dependencies = {
+        "ray-x/guihua.lua",
+        "neovim/nvim-lspconfig",
+        "nvim-treesitter/nvim-treesitter",
+    },
+    config = function()
+        require("go").setup({
+            goimports = "gopls",
+            gofmt = "gopls",
+            tag_transform = false,
+            test_dir = "",
+            comment_placeholder = "   ",
+            lsp_cfg = true,
+            lsp_gofumpt = true,
+            lsp_on_attach = true,
+            dap_debug = true,
+        })
+    end,
+    event = { "CmdlineEnter" },
+    ft = { "go", "gomod" },
+    build = ':lua require("go.install").update_all_sync()'
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">typescript-tools.nvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">TypeScript integration with native LSP. Faster than typescript-language-server.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Organize imports</li>
+                            <li>Remove unused imports</li>
+                            <li>Add missing imports</li>
+                            <li>Rename file & update imports</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "pmizio/typescript-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+    opts = {
+        settings = {
+            separate_diagnostic_server = true,
+            publish_diagnostic_on = "insert_leave",
+            tsserver_file_preferences = {
+                includeInlayParameterNameHints = "all",
+                includeCompletionsForModuleExports = true,
+                quotePreference = "auto",
+            },
+        },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">rustaceanvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">Supercharge your Rust experience. Automatically configured rust-analyzer with enhanced features.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Inlay hints</li>
+                            <li>Expand macros</li>
+                            <li>Cargo commands</li>
+                            <li>Crate graph</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "mrcjkb/rustaceanvim",
+    version = "^4",
+    ft = { "rust" },
+    config = function()
+        vim.g.rustaceanvim = {
+            server = {
+                on_attach = function(client, bufnr)
+                    vim.keymap.set("n", "<leader>ca", function()
+                        vim.cmd.RustLsp("codeAction")
+                    end, { buffer = bufnr })
+                end,
+                settings = {
+                    ["rust-analyzer"] = {
+                        cargo = {
+                            allFeatures = true,
+                        },
+                    },
+                },
+            },
+        }
+    end,
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">neotest</h3>
+                        <span class="plugin-badge badge-essential">Essential</span>
+                    </div>
+                    <p class="plugin-description">Framework for interacting with tests. Supports Go, Python, JS/TS, Rust and more.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Run tests from editor</li>
+                            <li>See test results inline</li>
+                            <li>Debug tests with DAP</li>
+                            <li>Test summary window</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "nvim-neotest/neotest",
+    dependencies = {
+        "nvim-lua/plenary.nvim",
+        "nvim-treesitter/nvim-treesitter",
+        "nvim-neotest/neotest-go",
+        "nvim-neotest/neotest-python",
+        "nvim-neotest/neotest-jest",
+    },
+    config = function()
+        require("neotest").setup({
+            adapters = {
+                require("neotest-go"),
+                require("neotest-python"),
+                require("neotest-jest"),
+            },
+        })
+    end,
+    keys = {
+        { "<leader>tt", function() require("neotest").run.run() end, desc = "Run Nearest Test" },
+        { "<leader>tf", function() require("neotest").run.run(vim.fn.expand("%")) end, desc = "Run File Tests" },
+        { "<leader>td", function() require("neotest").run.run({strategy = "dap"}) end, desc = "Debug Test" },
+        { "<leader>ts", function() require("neotest").summary.toggle() end, desc = "Toggle Summary" },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced -->
+        <div id="advanced" class="section" style="display: none;">
+            <div class="section-header">
+                <div class="section-icon">⚙️</div>
+                <h2 class="section-title">Advanced Tools</h2>
+            </div>
+
+            <div class="plugin-grid">
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">refactoring.nvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">The Refactoring library based off the book by Martin Fowler. Extract, inline, and more.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Extract function/variable</li>
+                            <li>Inline variable</li>
+                            <li>Extract block</li>
+                            <li>Multiple language support</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "ThePrimeagen/refactoring.nvim",
+    dependencies = {
+        "nvim-lua/plenary.nvim",
+        "nvim-treesitter/nvim-treesitter",
+    },
+    config = function()
+        require("refactoring").setup()
+    end,
+    keys = {
+        { "<leader>re", function() require("refactoring").refactor("Extract Function") end, mode = "x", desc = "Extract Function" },
+        { "<leader>rf", function() require("refactoring").refactor("Extract Function To File") end, mode = "x", desc = "Extract Function To File" },
+        { "<leader>rv", function() require("refactoring").refactor("Extract Variable") end, mode = "x", desc = "Extract Variable" },
+        { "<leader>ri", function() require("refactoring").refactor("Inline Variable") end, mode = { "n", "x" }, desc = "Inline Variable" },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">aerial.nvim</h3>
+                        <span class="plugin-badge badge-recommended">Recommended</span>
+                    </div>
+                    <p class="plugin-description">Code outline window for quick navigation. Shows functions, classes, and symbols in a tree view.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Symbol outline sidebar</li>
+                            <li>Treesitter & LSP support</li>
+                            <li>Automatic updates</li>
+                            <li>Fold integration</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "stevearc/aerial.nvim",
+    opts = {},
+    dependencies = {
+        "nvim-treesitter/nvim-treesitter",
+        "nvim-tree/nvim-web-devicons"
+    },
+    config = function()
+        require("aerial").setup({
+            on_attach = function(bufnr)
+                vim.keymap.set("n", "{", "<cmd>AerialPrev<CR>", { buffer = bufnr })
+                vim.keymap.set("n", "}", "<cmd>AerialNext<CR>", { buffer = bufnr })
+            end,
+        })
+        vim.keymap.set("n", "<leader>a", "<cmd>AerialToggle!<CR>")
+    end,
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">rest.nvim</h3>
+                        <span class="plugin-badge badge-optional">Optional</span>
+                    </div>
+                    <p class="plugin-description">Fast Neovim HTTP client written in Lua. Test APIs directly from your editor.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>HTTP request execution</li>
+                            <li>Environment variables</li>
+                            <li>Response preview</li>
+                            <li>cURL command generation</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "rest-nvim/rest.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+        require("rest-nvim").setup({
+            result_split_horizontal = false,
+            result_split_in_place = false,
+            skip_ssl_verification = false,
+            encode_url = true,
+            highlight = {
+                enabled = true,
+                timeout = 150,
+            },
+            result = {
+                show_url = true,
+                show_http_info = true,
+                show_headers = true,
+                formatters = {
+                    json = "jq",
+                    html = function(body)
+                        return vim.fn.system({"tidy", "-i", "-q", "-"}, body)
+                    end
+                },
+            },
+        })
+    end,
+    keys = {
+        { "<leader>rr", "<Plug>RestNvim", desc = "Run HTTP request" },
+        { "<leader>rp", "<Plug>RestNvimPreview", desc = "Preview HTTP request" },
+        { "<leader>rl", "<Plug>RestNvimLast", desc = "Run last HTTP request" },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <h3 class="plugin-name">overseer.nvim</h3>
+                        <span class="plugin-badge badge-optional">Optional</span>
+                    </div>
+                    <p class="plugin-description">Task runner and job management. Run builds, tests, and scripts with ease.</p>
+                    <div class="plugin-features">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list">
+                            <li>Task templates</li>
+                            <li>Async execution</li>
+                            <li>Output parsing</li>
+                            <li>Integration with quickfix</li>
+                        </ul>
+                    </div>
+                    <div class="plugin-config">
+                        <div class="config-toggle" onclick="toggleConfig(this)">
+                            <span>▶</span>
+                            <span>View Configuration</span>
+                        </div>
+                        <div class="config-content">
+                            <div class="code-block">
+                                <pre>{
+    "stevearc/overseer.nvim",
+    opts = {},
+    config = function()
+        require("overseer").setup({
+            templates = { "builtin", "user.go_build", "user.npm_scripts" },
+        })
+    end,
+    keys = {
+        { "<leader>or", "<cmd>OverseerRun<cr>", desc = "Run task" },
+        { "<leader>ot", "<cmd>OverseerToggle<cr>", desc = "Toggle task list" },
+    },
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                // Update active nav
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                
+                // Show corresponding section
+                const sectionId = item.dataset.section;
+                document.querySelectorAll('.section').forEach(section => {
+                    section.style.display = section.id === sectionId ? 'block' : 'none';
+                });
+            });
+        });
+
+        // Config toggle
+        function toggleConfig(element) {
+            const content = element.nextElementSibling;
+            const arrow = element.querySelector('span:first-child');
+            
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                arrow.textContent = '▶';
+            } else {
+                content.classList.add('show');
+                arrow.textContent = '▼';
+            }
+        }
+
+        // Animate cards on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.plugin-card').forEach(card => {
+            card.style.animationPlayState = 'paused';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

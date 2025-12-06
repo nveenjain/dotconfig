@@ -1,7 +1,28 @@
 return {
     "tpope/vim-fugitive",
     keys = {
-        { "<leader>gs", "<cmd>Git<cr>", desc = "Git status" },
+        {
+            "<leader>gs",
+            function()
+                -- Check if a fugitive buffer is visible in any window
+                for _, win in ipairs(vim.api.nvim_list_wins()) do
+                    local buf = vim.api.nvim_win_get_buf(win)
+                    if vim.bo[buf].filetype == "fugitive" then
+                        vim.api.nvim_win_close(win, false)
+                        return
+                    end
+                end
+                -- Track source window for navigation history
+                local current_win = vim.api.nvim_get_current_win()
+                -- No fugitive window found, open one
+                vim.cmd("Git")
+                -- Update global nav history so C-w k returns to source
+                _G.win_nav_history = _G.win_nav_history or {}
+                _G.win_nav_history.prev_win = current_win
+                _G.win_nav_history.last_dir = 'j'  -- fugitive opens below, so 'k' will go back
+            end,
+            desc = "Toggle Git status"
+        },
     },
     config = function()
 

@@ -28,7 +28,7 @@ return {
         require("mason").setup()
         require("mason-lspconfig").setup({
             ensure_installed = {
-                'ts_ls', 'golangci_lint_ls', 'gopls', 'pylsp', 'lua_ls', 'rust_analyzer'
+                'ts_ls', 'golangci_lint_ls', 'gopls', 'pylsp', 'lua_ls', 'rust_analyzer', 'jsonls'
             },
             handlers = {
                 function(server_name) -- default handler (optional)
@@ -66,6 +66,12 @@ return {
                         },
                     }
                 end,
+                ["buf_ls"] = function()
+                    local lspconfig = require('lspconfig')
+                    lspconfig.buf_ls.setup {
+                        capabilities = capabilities,
+                    }
+                end,
             }
         })
 
@@ -77,15 +83,23 @@ return {
                     require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
                 end,
             },
+            window = {
+                completion = cmp.config.window.bordered(),
+                documentation = cmp.config.window.bordered(),
+            },
             mapping = cmp.mapping.preset.insert({
                 ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
                 ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
                 ['<C-y>'] = cmp.mapping.confirm({ select = true }),
                 ["<C-Space>"] = cmp.mapping.complete(),
+                ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+                ['<C-f>'] = cmp.mapping.scroll_docs(4),
+                ['<C-e>'] = cmp.mapping.abort(),
             }),
             sources = cmp.config.sources({
                     { name = 'nvim_lsp' },
                     { name = 'luasnip' },
+                    { name = 'path' },
                 },
                 {
                     { name = 'buffer' },

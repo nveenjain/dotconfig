@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neovim Shortcuts Reference</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-hover: #1f2937;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --border: #30363d;
+            --key-bg: #1f2937;
+            --key-border: #374151;
+            --tab-bg: #21262d;
+            --tab-active: var(--accent);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--accent);
+            font-size: 2.5rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background-color: var(--tab-bg);
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .tab-btn.active {
+            background-color: var(--bg-secondary);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-primary);
+            padding: 20px 0;
+            z-index: 100;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 16px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn:hover {
+            background-color: var(--bg-hover);
+            border-color: var(--accent);
+        }
+
+        .filter-btn.active {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .category {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .category h2 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .category h3 {
+            color: var(--text-primary);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+        }
+
+        .shortcut-item {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr;
+            gap: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            align-items: center;
+        }
+
+        .shortcut-item:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .mode {
+            background-color: var(--key-bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-secondary);
+            text-align: center;
+            min-width: 40px;
+        }
+
+        .mode.normal { color: #10b981; }
+        .mode.visual { color: #f59e0b; }
+        .mode.insert { color: #3b82f6; }
+        .mode.all { color: #8b5cf6; }
+        .mode.git { color: #ef4444; }
+
+        .key-combo {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--key-bg);
+            border: 1px solid var(--key-border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            white-space: nowrap;
+            color: var(--text-primary);
+        }
+
+        .description {
+            color: var(--text-secondary);
+        }
+
+        .no-results {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-top: 50px;
+        }
+
+        .stats {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .plugin-note {
+            background-color: var(--bg-hover);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .shortcut-item {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .mode {
+                width: fit-content;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Neovim Shortcuts Reference</h1>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="custom">My Shortcuts</button>
+            <button class="tab-btn" data-tab="plugins">Plugin Defaults</button>
+        </div>
+
+        <div class="tab-content active" id="custom">
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="Search shortcuts... (e.g., 'git', 'debug', 'leader')" id="searchInput">
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="general">General</button>
+                    <button class="filter-btn" data-filter="lsp">LSP</button>
+                    <button class="filter-btn" data-filter="telescope">Telescope</button>
+                    <button class="filter-btn" data-filter="git">Git</button>
+                    <button class="filter-btn" data-filter="debug">Debug</button>
+                    <button class="filter-btn" data-filter="other">Other</button>
+                </div>
+            </div>
+
+            <div class="stats" id="stats"></div>
+            
+            <div class="shortcuts-grid" id="shortcutsContainer"></div>
+            
+            <div class="no-results" id="noResults" style="display: none;">
+                No shortcuts found matching your search criteria.
+            </div>
+        </div>
+
+        <div class="tab-content" id="plugins">
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="Search plugin shortcuts..." id="pluginSearchInput">
+            </div>
+
+            <div class="plugin-note">
+                These are common default shortcuts from popular Neovim plugins. Your configuration may override some of these.
+            </div>
+
+            <div class="shortcuts-grid" id="pluginShortcutsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const shortcuts = [
+            // General/Navigation
+            { category: 'general', mode: 'all', key: '<Space>', description: 'Leader key (disabled default space behavior)' },
+            { category: 'general', mode: 'n', key: '<leader>pv', description: 'Open Netrw file explorer' },
+            { category: 'general', mode: 'v', key: 'J', description: 'Move selected lines down' },
+            { category: 'general', mode: 'v', key: 'K', description: 'Move selected lines up' },
+            { category: 'general', mode: 'n', key: 'J', description: 'Join lines (preserving cursor position)' },
+            { category: 'general', mode: 'n', key: '<C-d>', description: 'Scroll down half page (centered)' },
+            { category: 'general', mode: 'n', key: '<C-u>', description: 'Scroll up half page (centered)' },
+            { category: 'general', mode: 'n', key: 'n', description: 'Next search result (centered)' },
+            { category: 'general', mode: 'n', key: 'N', description: 'Previous search result (centered)' },
+            { category: 'general', mode: 'x', key: '<leader>p', description: 'Paste without yanking deleted text' },
+            { category: 'general', mode: 'n,v', key: '<leader>y', description: 'Copy to system clipboard' },
+            { category: 'general', mode: 'n', key: '<leader>Y', description: 'Copy line to system clipboard' },
+            { category: 'general', mode: 'n,v', key: '<leader>d', description: 'Delete without yanking' },
+            { category: 'general', mode: 'i', key: '<C-c>', description: 'Exit insert mode (Escape)' },
+            { category: 'general', mode: 'n', key: 'Q', description: 'Disabled (no-op)' },
+            { category: 'general', mode: 'n', key: '<C-f>', description: 'Open tmux sessionizer' },
+            { category: 'general', mode: 'n', key: '<leader>f', description: 'Format current buffer (LSP)' },
+            { category: 'general', mode: 'n', key: '<C-j>', description: 'Next quickfix item' },
+            { category: 'general', mode: 'n', key: '<C-k>', description: 'Previous quickfix item' },
+            { category: 'general', mode: 'n', key: '<leader>k', description: 'Next location list item' },
+            { category: 'general', mode: 'n', key: '<leader>j', description: 'Previous location list item' },
+            { category: 'general', mode: 'n', key: '<leader>s', description: 'Replace word under cursor (project-wide)' },
+            { category: 'general', mode: 'n', key: '<leader>x', description: 'Make current file executable' },
+            { category: 'general', mode: 'n', key: '<leader><leader>', description: 'Source current file' },
+
+            // LSP
+            { category: 'lsp', mode: 'n', key: 'gd', description: 'Go to definition' },
+            { category: 'lsp', mode: 'n', key: 'K', description: 'Show hover information' },
+            { category: 'lsp', mode: 'n', key: '<leader>vws', description: 'Workspace symbol search' },
+            { category: 'lsp', mode: 'n', key: '<leader>vd', description: 'Open diagnostics float' },
+            { category: 'lsp', mode: 'n,v', key: '<leader>vca', description: 'Code action' },
+            { category: 'lsp', mode: 'n', key: '<leader>vrr', description: 'Find references' },
+            { category: 'lsp', mode: 'n', key: '<leader>vi', description: 'Go to implementation' },
+            { category: 'lsp', mode: 'n', key: '<leader>vrn', description: 'Rename symbol' },
+            { category: 'lsp', mode: 'i', key: '<C-h>', description: 'Signature help' },
+            { category: 'lsp', mode: 'n', key: '[d', description: 'Next diagnostic' },
+            { category: 'lsp', mode: 'n', key: ']d', description: 'Previous diagnostic' },
+
+            // Telescope
+            { category: 'telescope', mode: 'n', key: '<leader>pf', description: 'Find files' },
+            { category: 'telescope', mode: 'n', key: '<C-p>', description: 'Git files' },
+            { category: 'telescope', mode: 'n', key: '<leader>pws', description: 'Search for word under cursor' },
+            { category: 'telescope', mode: 'n', key: '<leader>pWs', description: 'Search for WORD under cursor' },
+            { category: 'telescope', mode: 'n', key: '<leader>ps', description: 'Grep search with input' },
+            { category: 'telescope', mode: 'n', key: '<leader>vh', description: 'Search help tags' },
+
+            // Git/Fugitive
+            { category: 'git', mode: 'n', key: '<leader>gs', description: 'Open Git status' },
+            { category: 'git', mode: 'n', key: '<leader>p', description: 'Git push (in fugitive buffer)' },
+            { category: 'git', mode: 'n', key: '<leader>P', description: 'Git pull --rebase (in fugitive buffer)' },
+            { category: 'git', mode: 'n', key: '<leader>t', description: 'Git push -u origin (in fugitive buffer)' },
+            { category: 'git', mode: 'n', key: '<leader>gb', description: 'Create new git branch' },
+            { category: 'git', mode: 'n', key: '<leader>gwc', description: 'Create git worktree' },
+            { category: 'git', mode: 'n', key: '<leader>gwr', description: 'Remove git worktree' },
+            { category: 'git', mode: 'n', key: '<leader>gwl', description: 'List git worktrees' },
+            { category: 'git', mode: 'n', key: '<leader>gws', description: 'Set worktree directory' },
+            { category: 'git', mode: 'n', key: 'gu', description: 'Get changes from left diff (merge conflicts)' },
+            { category: 'git', mode: 'n', key: 'gh', description: 'Get changes from right diff (merge conflicts)' },
+
+            // Debug (DAP)
+            { category: 'debug', mode: 'n', key: '<leader>dc', description: 'Debug: Start/Continue' },
+            { category: 'debug', mode: 'n', key: '<leader>dn', description: 'Debug: Step Over (Next)' },
+            { category: 'debug', mode: 'n', key: '<leader>di', description: 'Debug: Step Into' },
+            { category: 'debug', mode: 'n', key: '<leader>do', description: 'Debug: Step Out' },
+            { category: 'debug', mode: 'n', key: '<leader>db', description: 'Debug: Toggle Breakpoint' },
+            { category: 'debug', mode: 'n', key: '<leader>dB', description: 'Debug: Set Conditional Breakpoint' },
+            { category: 'debug', mode: 'n', key: '<leader>dl', description: 'Debug: Set Log Point' },
+            { category: 'debug', mode: 'n', key: '<leader>dr', description: 'Debug: Open REPL' },
+            { category: 'debug', mode: 'n', key: '<leader>dL', description: 'Debug: Run Last' },
+            { category: 'debug', mode: 'n', key: '<leader>du', description: 'Debug: Toggle UI' },
+            { category: 'debug', mode: 'n,v', key: '<leader>de', description: 'Debug: Evaluate Expression' },
+            { category: 'debug', mode: 'n', key: '<leader>dv', description: 'Debug: View/Hover Variables' },
+            { category: 'debug', mode: 'n', key: '<leader>ds', description: 'Debug: Scopes' },
+            { category: 'debug', mode: 'n', key: '<leader>df', description: 'Debug: Stack Frames' },
+            { category: 'debug', mode: 'n', key: '<leader>dt', description: 'Debug: Threads' },
+            { category: 'debug', mode: 'n', key: '<leader>dk', description: 'Debug: Go Up Stack Frame' },
+            { category: 'debug', mode: 'n', key: '<leader>dj', description: 'Debug: Go Down Stack Frame' },
+            { category: 'debug', mode: 'n', key: '<leader>dx', description: 'Debug: Terminate' },
+            { category: 'debug', mode: 'n', key: '<leader>dq', description: 'Debug: Quit/Disconnect' },
+
+            // Other tools
+            { category: 'other', mode: 'n', key: '<leader>tt', description: 'Toggle Trouble window' },
+            { category: 'other', mode: 'n', key: '[t', description: 'Next Trouble item' },
+            { category: 'other', mode: 'n', key: ']t', description: 'Previous Trouble item' },
+            { category: 'other', mode: 'n', key: '<leader>u', description: 'Toggle Undotree' },
+            { category: 'other', mode: 'i', key: '<C-s>e', description: 'Expand snippet' },
+            { category: 'other', mode: 'i,s', key: '<C-s>;', description: 'Jump to next snippet placeholder' },
+            { category: 'other', mode: 'i,s', key: '<C-s>,', description: 'Jump to previous snippet placeholder' },
+            { category: 'other', mode: 'i,s', key: '<C-E>', description: 'Change snippet choice' },
+            { category: 'other', mode: 'i', key: '<C-l>', description: 'Accept Copilot suggestion' },
+            { category: 'other', mode: 'i', key: '<M-]>', description: 'Next Copilot suggestion' },
+            { category: 'other', mode: 'i', key: '<M-[>', description: 'Previous Copilot suggestion' },
+            { category: 'other', mode: 'n', key: '<leader>cc', description: 'Toggle Copilot Chat' },
+            { category: 'other', mode: 'n', key: '<leader>aC', description: 'Open Copilot Chat' },
+        ];
+
+        const pluginShortcuts = [
+            // nvim-cmp
+            { category: 'nvim-cmp', subcategory: 'Navigation', mode: 'i', key: '<C-j> / <Tab>', description: 'Select next item in completion menu' },
+            { category: 'nvim-cmp', subcategory: 'Navigation', mode: 'i', key: '<C-k> / <S-Tab>', description: 'Select previous item in completion menu' },
+            { category: 'nvim-cmp', subcategory: 'Navigation', mode: 'i', key: '<C-b>', description: 'Scroll docs up (4 lines)' },
+            { category: 'nvim-cmp', subcategory: 'Navigation', mode: 'i', key: '<C-f>', description: 'Scroll docs down (4 lines)' },
+            { category: 'nvim-cmp', subcategory: 'Actions', mode: 'i', key: '<C-Space>', description: 'Trigger completion manually' },
+            { category: 'nvim-cmp', subcategory: 'Actions', mode: 'i', key: '<C-e>', description: 'Abort/close completion' },
+            { category: 'nvim-cmp', subcategory: 'Actions', mode: 'i', key: '<CR>', description: 'Confirm selected completion' },
+            { category: 'nvim-cmp', subcategory: 'Actions', mode: 'i', key: '<C-y>', description: 'Confirm completion (alternative)' },
+
+            // vim-surround
+            { category: 'vim-surround', subcategory: 'Delete', mode: 'n', key: 'ds<char>', description: 'Delete surrounding <char> (e.g., ds" deletes quotes)' },
+            { category: 'vim-surround', subcategory: 'Change', mode: 'n', key: 'cs<old><new>', description: 'Change surrounding (e.g., cs"\' changes " to \')' },
+            { category: 'vim-surround', subcategory: 'Add', mode: 'n', key: 'ys<motion><char>', description: 'Add surrounding (e.g., ysiw] adds brackets around word)' },
+            { category: 'vim-surround', subcategory: 'Add', mode: 'n', key: 'yss<char>', description: 'Add surrounding to entire line' },
+            { category: 'vim-surround', subcategory: 'Add', mode: 'n', key: 'ySs<char>', description: 'Add surrounding to line with newlines' },
+            { category: 'vim-surround', subcategory: 'Visual', mode: 'v', key: 'S<char>', description: 'Surround selection with <char>' },
+            { category: 'vim-surround', subcategory: 'Visual', mode: 'v', key: 'gS<char>', description: 'Surround selection on new lines' },
+
+            // vim-fugitive (Git status buffer)
+            { category: 'vim-fugitive', subcategory: 'Staging', mode: 'git', key: 's', description: 'Stage file/hunk under cursor' },
+            { category: 'vim-fugitive', subcategory: 'Staging', mode: 'git', key: 'u', description: 'Unstage file/hunk under cursor' },
+            { category: 'vim-fugitive', subcategory: 'Staging', mode: 'git', key: '-', description: 'Toggle stage/unstage' },
+            { category: 'vim-fugitive', subcategory: 'Staging', mode: 'git', key: 'U', description: 'Unstage all files' },
+            { category: 'vim-fugitive', subcategory: 'Staging', mode: 'git', key: 'X', description: 'Discard changes under cursor' },
+            { category: 'vim-fugitive', subcategory: 'Diff', mode: 'git', key: '=', description: 'Toggle inline diff' },
+            { category: 'vim-fugitive', subcategory: 'Diff', mode: 'git', key: 'dd', description: 'Open diff split' },
+            { category: 'vim-fugitive', subcategory: 'Diff', mode: 'git', key: 'dv', description: 'Open vertical diff split' },
+            { category: 'vim-fugitive', subcategory: 'Commit', mode: 'git', key: 'cc', description: 'Create commit' },
+            { category: 'vim-fugitive', subcategory: 'Commit', mode: 'git', key: 'ca', description: 'Amend last commit' },
+            { category: 'vim-fugitive', subcategory: 'Commit', mode: 'git', key: 'cw', description: 'Reword last commit' },
+            { category: 'vim-fugitive', subcategory: 'Other', mode: 'git', key: 'g?', description: 'Show help/keybindings' },
+            { category: 'vim-fugitive', subcategory: 'Other', mode: 'git', key: 'czz', description: 'Stash changes' },
+
+            // Telescope (in picker)
+            { category: 'telescope', subcategory: 'Navigation', mode: 'n', key: '<C-j>', description: 'Move to next item' },
+            { category: 'telescope', subcategory: 'Navigation', mode: 'n', key: '<C-k>', description: 'Move to previous item' },
+            { category: 'telescope', subcategory: 'Navigation', mode: 'n', key: '<C-u>', description: 'Scroll preview up' },
+            { category: 'telescope', subcategory: 'Navigation', mode: 'n', key: '<C-d>', description: 'Scroll preview down' },
+            { category: 'telescope', subcategory: 'Selection', mode: 'n', key: '<CR>', description: 'Open selected file' },
+            { category: 'telescope', subcategory: 'Selection', mode: 'n', key: '<C-x>', description: 'Open in horizontal split' },
+            { category: 'telescope', subcategory: 'Selection', mode: 'n', key: '<C-v>', description: 'Open in vertical split' },
+            { category: 'telescope', subcategory: 'Selection', mode: 'n', key: '<C-t>', description: 'Open in new tab' },
+            { category: 'telescope', subcategory: 'Other', mode: 'n', key: '<Esc>', description: 'Close telescope' },
+            { category: 'telescope', subcategory: 'Other', mode: 'n', key: '<C-c>', description: 'Close telescope' },
+
+            // Harpoon (common mappings)
+            { category: 'harpoon', subcategory: 'File Management', mode: 'n', key: '<leader>a', description: 'Add file to Harpoon' },
+            { category: 'harpoon', subcategory: 'File Management', mode: 'n', key: '<leader>e', description: 'Toggle Harpoon menu' },
+            { category: 'harpoon', subcategory: 'Navigation', mode: 'n', key: '<leader>1-9', description: 'Navigate to file 1-9' },
+            { category: 'harpoon', subcategory: 'Navigation', mode: 'n', key: '<C-h/j/k/l>', description: 'Navigate to files 1-4' },
+        ];
+
+        const categoryNames = {
+            'general': 'General & Navigation',
+            'lsp': 'LSP (Language Server)',
+            'telescope': 'Telescope (Fuzzy Finder)',
+            'git': 'Git & Fugitive',
+            'debug': 'Debug (DAP)',
+            'other': 'Other Tools'
+        };
+
+        const pluginCategoryNames = {
+            'nvim-cmp': 'nvim-cmp (Autocompletion)',
+            'vim-surround': 'vim-surround',
+            'vim-fugitive': 'vim-fugitive (Git)',
+            'telescope': 'Telescope (In Picker)',
+            'harpoon': 'Harpoon (Quick Navigation)'
+        };
+
+        const modeNames = {
+            'n': 'normal',
+            'v': 'visual',
+            'i': 'insert',
+            'x': 'visual',
+            's': 'select',
+            'n,v': 'normal, visual',
+            'i,s': 'insert, select',
+            'all': 'all',
+            'git': 'git status'
+        };
+
+        let currentFilter = 'all';
+        let currentTab = 'custom';
+
+        function getModeClass(mode) {
+            if (mode === 'git') return 'git';
+            if (mode.includes('i')) return 'insert';
+            if (mode.includes('v') || mode.includes('x')) return 'visual';
+            if (mode === 'all') return 'all';
+            return 'normal';
+        }
+
+        function renderShortcuts(filter = 'all', searchTerm = '') {
+            const container = document.getElementById('shortcutsContainer');
+            const noResults = document.getElementById('noResults');
+            const stats = document.getElementById('stats');
+            
+            container.innerHTML = '';
+            
+            const searchLower = searchTerm.toLowerCase();
+            const filteredShortcuts = shortcuts.filter(s => {
+                const matchesFilter = filter === 'all' || s.category === filter;
+                const matchesSearch = !searchTerm || 
+                    s.key.toLowerCase().includes(searchLower) ||
+                    s.description.toLowerCase().includes(searchLower) ||
+                    s.category.toLowerCase().includes(searchLower) ||
+                    modeNames[s.mode].toLowerCase().includes(searchLower);
+                return matchesFilter && matchesSearch;
+            });
+
+            if (filteredShortcuts.length === 0) {
+                noResults.style.display = 'block';
+                stats.textContent = '';
+                return;
+            }
+            
+            noResults.style.display = 'none';
+            stats.textContent = `Showing ${filteredShortcuts.length} of ${shortcuts.length} shortcuts`;
+
+            // Group by category
+            const grouped = {};
+            filteredShortcuts.forEach(s => {
+                if (!grouped[s.category]) grouped[s.category] = [];
+                grouped[s.category].push(s);
+            });
+
+            // Render categories
+            Object.keys(grouped).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                
+                const title = document.createElement('h2');
+                title.textContent = categoryNames[category] || category;
+                categoryDiv.appendChild(title);
+
+                grouped[category].forEach(shortcut => {
+                    const item = document.createElement('div');
+                    item.className = 'shortcut-item';
+                    
+                    const mode = document.createElement('span');
+                    mode.className = `mode ${getModeClass(shortcut.mode)}`;
+                    mode.textContent = modeNames[shortcut.mode] || shortcut.mode;
+                    
+                    const key = document.createElement('span');
+                    key.className = 'key-combo';
+                    key.innerHTML = shortcut.key.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    
+                    const desc = document.createElement('span');
+                    desc.className = 'description';
+                    desc.textContent = shortcut.description;
+                    
+                    item.appendChild(mode);
+                    item.appendChild(key);
+                    item.appendChild(desc);
+                    categoryDiv.appendChild(item);
+                });
+                
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        function renderPluginShortcuts(searchTerm = '') {
+            const container = document.getElementById('pluginShortcutsContainer');
+            container.innerHTML = '';
+            
+            const searchLower = searchTerm.toLowerCase();
+            const filteredShortcuts = pluginShortcuts.filter(s => {
+                return !searchTerm || 
+                    s.key.toLowerCase().includes(searchLower) ||
+                    s.description.toLowerCase().includes(searchLower) ||
+                    s.category.toLowerCase().includes(searchLower) ||
+                    (s.subcategory && s.subcategory.toLowerCase().includes(searchLower));
+            });
+
+            // Group by category and subcategory
+            const grouped = {};
+            filteredShortcuts.forEach(s => {
+                if (!grouped[s.category]) grouped[s.category] = {};
+                if (!grouped[s.category][s.subcategory]) grouped[s.category][s.subcategory] = [];
+                grouped[s.category][s.subcategory].push(s);
+            });
+
+            // Render categories
+            Object.keys(grouped).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                
+                const title = document.createElement('h2');
+                title.textContent = pluginCategoryNames[category] || category;
+                categoryDiv.appendChild(title);
+
+                Object.keys(grouped[category]).forEach(subcategory => {
+                    if (subcategory && subcategory !== 'undefined') {
+                        const subTitle = document.createElement('h3');
+                        subTitle.textContent = subcategory;
+                        categoryDiv.appendChild(subTitle);
+                    }
+
+                    grouped[category][subcategory].forEach(shortcut => {
+                        const item = document.createElement('div');
+                        item.className = 'shortcut-item';
+                        
+                        const mode = document.createElement('span');
+                        mode.className = `mode ${getModeClass(shortcut.mode)}`;
+                        mode.textContent = modeNames[shortcut.mode] || shortcut.mode;
+                        
+                        const key = document.createElement('span');
+                        key.className = 'key-combo';
+                        key.innerHTML = shortcut.key.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        
+                        const desc = document.createElement('span');
+                        desc.className = 'description';
+                        desc.textContent = shortcut.description;
+                        
+                        item.appendChild(mode);
+                        item.appendChild(key);
+                        item.appendChild(desc);
+                        categoryDiv.appendChild(item);
+                    });
+                });
+                
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                const tabId = btn.dataset.tab;
+                document.getElementById(tabId).classList.add('active');
+                currentTab = tabId;
+                
+                if (tabId === 'plugins') {
+                    renderPluginShortcuts();
+                }
+            });
+        });
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            renderShortcuts(currentFilter, e.target.value);
+        });
+
+        document.getElementById('pluginSearchInput').addEventListener('input', (e) => {
+            renderPluginShortcuts(e.target.value);
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderShortcuts(currentFilter, document.getElementById('searchInput').value);
+            });
+        });
+
+        // Initial render
+        renderShortcuts();
+
+        // Keyboard shortcut to focus search
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                if (currentTab === 'custom') {
+                    document.getElementById('searchInput').focus();
+                } else {
+                    document.getElementById('pluginSearchInput').focus();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

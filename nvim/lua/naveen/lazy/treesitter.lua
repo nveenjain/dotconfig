@@ -1,7 +1,7 @@
 return {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    -- disable for vscode
+    event = { "BufReadPost", "BufNewFile" },
     cond = vim.g.vscode == nil,
     config = function()
         require('nvim-treesitter.configs').setup ({
@@ -25,17 +25,22 @@ return {
             highlight = {
                 enable = true,
                 disable = function(lang, buf)
-                    -- Increase max filesize for Go files to 10MB
-                    local max_filesize = 100 * 1024 -- 100 KB default
+                    -- Respect large_file flag from init.lua
+                    if vim.b[buf].large_file then
+                        return true
+                    end
+
+                    -- 2MB threshold (matches large_file_threshold in init.lua)
+                    local max_filesize = 2 * 1024 * 1024
                     if lang == "go" then
                         max_filesize = 10 * 1024 * 1024 -- 10 MB for Go files
                     end
-                    
+
                     local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
                     if ok and stats and stats.size > max_filesize then
                         return true
                     end
-                    
+
                     -- Workaround for Go parser bug when deleting at end of file
                     if lang == "go" then
                         local line_count = vim.api.nvim_buf_line_count(buf)

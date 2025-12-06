@@ -11,6 +11,48 @@ local NaveenJGroup = augroup('NaveenJGroup', {})
 local autocmd = vim.api.nvim_create_autocmd
 local yank_group = augroup('HighlightYank', {})
 
+-- Smart large file mode - immediate syntax, no treesitter
+local large_file_threshold = 2 * 1024 * 1024  -- 2MB
+
+autocmd("BufReadPre", {
+    group = NaveenJGroup,
+    callback = function(args)
+        local ok, stats = pcall(vim.loop.fs_stat, args.file)
+        if ok and stats and stats.size > large_file_threshold then
+            -- Mark as large file BEFORE loading
+            vim.b[args.buf].large_file = true
+
+            -- Disable I/O overhead immediately
+            vim.bo[args.buf].swapfile = false
+            vim.bo[args.buf].undofile = false
+            vim.bo[args.buf].undolevels = 100  -- Limited undo (still useful)
+        end
+    end,
+})
+
+autocmd("BufReadPost", {
+    group = NaveenJGroup,
+    callback = function(args)
+        if not vim.b[args.buf].large_file then return end
+
+        local stats_ok, stats = pcall(vim.loop.fs_stat, args.file)
+        local size_mb = stats_ok and stats and (stats.size / 1024 / 1024) or 0
+
+        -- Disable visual overhead for fast scrolling
+        vim.opt_local.foldmethod = "manual"
+        vim.opt_local.spell = false
+        vim.opt_local.relativenumber = false
+        vim.opt_local.cursorline = false
+        vim.opt_local.colorcolumn = ""
+
+        -- Keep vim syntax ON (fast, immediate highlighting)
+        -- Disable treesitter (too heavy for large files)
+        pcall(vim.treesitter.stop, args.buf)
+
+        vim.notify(string.format("Large file (%.1f MB) - using vim syntax", size_mb), vim.log.levels.INFO)
+    end,
+})
+
 function R(name)
     require("plenary.reload").reload_module(name)
 end
@@ -70,7 +112,11 @@ end, {})
 autocmd({ "BufWritePre" }, {
     group = NaveenJGroup,
     pattern = "*",
-    command = [[%s/\s\+$//e]],
+    callback = function()
+        if vim.bo.filetype ~= "proto" then
+            vim.cmd([[%s/\s\+$//e]])
+        end
+    end,
 })
 
 -- Remove formatting from BufWritePre for Go files to allow clean saves
@@ -148,18 +194,23 @@ autocmd("BufWritePost", {
     end
 })
 
--- Disable formatting for proto files
-autocmd("BufWritePre", {
-    pattern = "*.proto",
+
+-- Format JSON files with prettier on save
+autocmd("BufWritePost", {
+    pattern = "*.json",
     callback = function()
-        -- Only remove trailing whitespace, no formatting
-        vim.cmd([[%s/\s\+$//e]])
+        local cursor_pos = vim.api.nvim_win_get_cursor(0)
+        local fileName = vim.fn.expand("%:p")
+        vim.fn.system(string.format("prettier --write %s", vim.fn.shellescape(fileName)))
+        vim.cmd("edit!")
+        vim.api.nvim_win_set_cursor(0, cursor_pos)
     end
 })
 
 autocmd('LspAttach', {
     group = NaveenJGroup,
     callback = function(e)
+        -- LSP attaches immediately (async/background) - no special handling for large files
         local opts = { buffer = e.buf }
         vim.keymap.set("n", "gd", function()
             local clients = vim.lsp.get_clients({ bufnr = 0 })
@@ -217,6 +268,35 @@ autocmd('LspAttach', {
 vim.g.netrw_browse_split = 0
 vim.g.netrw_banner = 0
 vim.g.netrw_winsize = 20
+
+-- Track previous window for special buffers (quickfix, help, fugitive, etc.)
+-- so we can return to it when closing
+local special_filetypes = { "qf", "help", "fugitive", "man", "lspinfo", "spectre_panel" }
+
+autocmd("BufWinEnter", {
+    group = NaveenJGroup,
+    callback = function()
+        local ft = vim.bo.filetype
+        for _, special_ft in ipairs(special_filetypes) do
+            if ft == special_ft then
+                -- Store the previous window (the one we came from)
+                local prev_win = vim.fn.win_getid(vim.fn.winnr('#'))
+                if prev_win ~= 0 and vim.api.nvim_win_is_valid(prev_win) then
+                    vim.w.source_win = prev_win
+                    -- Also update global nav history so C-w navigation works
+                    _G.win_nav_history = _G.win_nav_history or {}
+                    _G.win_nav_history.prev_win = prev_win
+                    -- Determine direction based on window position
+                    local current_row = vim.fn.win_screenpos(0)[1]
+                    local prev_row = vim.fn.win_screenpos(vim.fn.win_id2win(prev_win))[1]
+                    _G.win_nav_history.last_dir = current_row > prev_row and 'j' or 'k'
+                end
+                return
+            end
+        end
+    end,
+})
+
 
 -- Auto-load project-specific DAP configurations
 autocmd("VimEnter", {
