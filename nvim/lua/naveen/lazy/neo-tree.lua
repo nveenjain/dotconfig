@@ -1,12 +1,10 @@
--- Cache git root to avoid repeated shell calls
-local cached_git_root = nil
-local function get_git_root()
-    if cached_git_root == nil then
-        local result = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-        cached_git_root = (result and vim.v.shell_error == 0) and result or false
-    end
-    return cached_git_root
-end
+---@file neo-tree.lua
+---@description File explorer with git integration
+---@requires naveen.core
+
+local core = require("naveen.core")
+local constants = require("naveen.core.constants")
+local highlights = require("naveen.core.highlights")
 
 return {
     {
@@ -17,31 +15,40 @@ return {
             "nvim-tree/nvim-web-devicons",
             "MunifTanjim/nui.nvim",
         },
-        cond = vim.g.vscode == nil,
+        cond = core.not_vscode,
         keys = {
             {
                 "<leader>e",
                 function()
-                    local git_root = get_git_root()
+                    local git_root = core.get_git_root()
                     if git_root then
                         vim.cmd("Neotree toggle dir=" .. vim.fn.fnameescape(git_root))
                     else
                         vim.cmd("Neotree toggle")
                     end
                 end,
-                desc = "Toggle Neo-tree"
+                desc = "Explorer: Toggle Neo-tree",
             },
             {
                 "<leader>pv",
                 function()
-                    local git_root = get_git_root()
+                    -- Check if neo-tree is open and close it, otherwise reveal
+                    for _, win in ipairs(vim.api.nvim_list_wins()) do
+                        local buf = vim.api.nvim_win_get_buf(win)
+                        if vim.bo[buf].filetype == "neo-tree" then
+                            vim.cmd("Neotree close")
+                            return
+                        end
+                    end
+                    -- Not open, reveal current file
+                    local git_root = core.get_git_root()
                     if git_root then
                         vim.cmd("Neotree reveal dir=" .. vim.fn.fnameescape(git_root))
                     else
                         vim.cmd("Neotree reveal")
                     end
                 end,
-                desc = "Reveal file in Neo-tree"
+                desc = "Explorer: Toggle/Reveal in Neo-tree",
             },
         },
         opts = {
@@ -53,9 +60,9 @@ return {
                 statusline = false,
             },
             filesystem = {
-                bind_to_cwd = false,  -- Don't change root when cwd changes
+                bind_to_cwd = false,
                 cwd_target = {
-                    sidebar = "none",  -- Don't change root for sidebar
+                    sidebar = "none",
                     current = "none",
                 },
                 follow_current_file = {
@@ -68,12 +75,11 @@ return {
                     hide_dotfiles = false,
                     hide_gitignored = false,
                 },
-                -- Find and use git root as the tree root
                 find_by_full_path_words = true,
             },
             window = {
                 position = "left",
-                width = 35,
+                width = constants.NEO_TREE_WIDTH,
                 mappings = {
                     ["<C-c>"] = "close_window",
                     ["<Esc>"] = "close_window",
@@ -125,14 +131,8 @@ return {
             },
         },
         config = function(_, opts)
-            -- Custom git status colors
-            vim.api.nvim_set_hl(0, "NeoTreeGitAdded", { fg = "#98c379" })     -- green
-            vim.api.nvim_set_hl(0, "NeoTreeGitModified", { fg = "#e5c07b" })  -- yellow
-            vim.api.nvim_set_hl(0, "NeoTreeGitDeleted", { fg = "#e06c75" })   -- red
-            vim.api.nvim_set_hl(0, "NeoTreeGitUntracked", { fg = "#56b6c2" }) -- cyan
-            vim.api.nvim_set_hl(0, "NeoTreeGitConflict", { fg = "#e06c75", bold = true })
-            vim.api.nvim_set_hl(0, "NeoTreeGitStaged", { fg = "#98c379" })    -- green
-            vim.api.nvim_set_hl(0, "NeoTreeGitUnstaged", { fg = "#e5c07b" })  -- yellow
+            -- Apply git status colors from centralized highlights
+            highlights.setup_neotree()
 
             require("neo-tree").setup(opts)
 
@@ -149,25 +149,29 @@ return {
                 callback = function()
                     vim.defer_fn(function()
                         vim.cmd("Neotree close")
-                    end, 10)
+                    end, constants.NEO_TREE_CLOSE_DELAY)
                 end,
             })
 
             -- When navigating from fugitive, ensure neo-tree stays at git root
             vim.api.nvim_create_autocmd("BufEnter", {
                 callback = function(args)
-                    local prev_buf = vim.fn.bufnr('#')
-                    if prev_buf == -1 then return end
+                    local prev_buf = vim.fn.bufnr("#")
+                    if prev_buf == -1 then
+                        return
+                    end
 
                     local prev_ft = vim.bo[prev_buf].filetype
-                    if prev_ft ~= "fugitive" then return end
+                    if prev_ft ~= "fugitive" then
+                        return
+                    end
 
                     -- Check if neo-tree is open
                     for _, win in ipairs(vim.api.nvim_list_wins()) do
                         local buf = vim.api.nvim_win_get_buf(win)
                         if vim.bo[buf].filetype == "neo-tree" then
                             vim.defer_fn(function()
-                                local git_root = get_git_root()
+                                local git_root = core.get_git_root()
                                 if git_root then
                                     local path = vim.api.nvim_buf_get_name(args.buf)
                                     if path ~= "" then

@@ -1,30 +1,66 @@
+---@file telescope.lua
+---@description Fuzzy finder configuration
+---@requires naveen.core.vscode
+
+local core = require("naveen.core")
+
 return {
-    'nvim-telescope/telescope.nvim',
-    branch = 'master',
+    "nvim-telescope/telescope.nvim",
+    branch = "master",
     dependencies = {
-        'nvim-lua/plenary.nvim'
+        "nvim-lua/plenary.nvim",
     },
-    cond = vim.g.vscode == nil,
+    cond = core.not_vscode,
     cmd = { "Telescope" },
     keys = {
-        { '<leader>pws', function()
-            local word = vim.fn.expand("<cword>")
-            require('telescope.builtin').grep_string({ search = word })
-        end, desc = "Grep word under cursor" },
-        { '<leader>pWs', function()
-            local word = vim.fn.expand("<cWORD>")
-            require('telescope.builtin').grep_string({ search = word })
-        end, desc = "Grep WORD under cursor" },
-        { '<leader>ps', function()
-            require('telescope.builtin').grep_string({ search = vim.fn.input("Grep > ") })
-        end, desc = "Grep with prompt" },
-        { '<leader>pg', function() require('telescope.builtin').live_grep() end, desc = "Live Grep" },
-        { '<leader>pb', function() require('telescope.builtin').buffers() end, desc = "Buffers" },
-        { '<leader>vh', function() require('telescope.builtin').help_tags() end, desc = "Help Tags" },
+        {
+            "<leader>pws",
+            function()
+                local word = vim.fn.expand("<cword>")
+                require("telescope.builtin").grep_string({ search = word })
+            end,
+            desc = "Search: Grep word",
+        },
+        {
+            "<leader>pWs",
+            function()
+                local word = vim.fn.expand("<cWORD>")
+                require("telescope.builtin").grep_string({ search = word })
+            end,
+            desc = "Search: Grep WORD",
+        },
+        {
+            "<leader>ps",
+            function()
+                require("telescope.builtin").grep_string({ search = vim.fn.input("Grep > ") })
+            end,
+            desc = "Search: Grep prompt",
+        },
+        {
+            "<leader>pg",
+            function()
+                require("telescope.builtin").live_grep()
+            end,
+            desc = "Search: Live grep",
+        },
+        {
+            "<leader>pb",
+            function()
+                require("telescope.builtin").buffers()
+            end,
+            desc = "Search: Buffers",
+        },
+        {
+            "<leader>vh",
+            function()
+                require("telescope.builtin").help_tags()
+            end,
+            desc = "Search: Help tags",
+        },
     },
     config = function()
         local actions = require("telescope.actions")
-        require('telescope').setup({
+        require("telescope").setup({
             defaults = {
                 vimgrep_arguments = {
                     "rg",
@@ -52,6 +88,6 @@ return {
                 },
             },
         })
-        pcall(require('telescope').load_extension, 'todo-comments')
-    end
+        pcall(require("telescope").load_extension, "todo-comments")
+    end,
 }
