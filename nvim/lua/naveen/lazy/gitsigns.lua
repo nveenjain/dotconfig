@@ -50,17 +50,5 @@ return {
         vim.api.nvim_set_hl(0, 'GitSignsTopDelete', { fg = '#ff0000' })
         vim.api.nvim_set_hl(0, 'GitSignsChangeDelete', { fg = '#ff8800' })
         vim.api.nvim_set_hl(0, 'GitSignsUntracked', { fg = '#808080' })
-        
-        -- Force gitsigns to attach on BufRead
-        vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile", "BufEnter" }, {
-            callback = function()
-                vim.defer_fn(function()
-                    if vim.fn.isdirectory(vim.fn.expand("%:p:h") .. "/.git") == 1 or 
-                       vim.fn.finddir(".git", vim.fn.expand("%:p:h") .. ";") ~= "" then
-                        require('gitsigns').attach()
-                    end
-                end, 0)
-            end
-        })
     end
 }

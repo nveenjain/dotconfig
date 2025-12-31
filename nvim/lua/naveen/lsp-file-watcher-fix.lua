@@ -15,11 +15,8 @@ M.setup = function()
             -- Check if the path exists before watching
             local stat = vim.loop.fs_stat(path)
             if not stat then
-                -- Path doesn't exist, return a dummy watcher
-                return {
-                    close = function() end,
-                    unwatch = function() end,
-                }
+                -- Path doesn't exist, return a no-op cancel function
+                return function() end
             end
             
             -- Wrap the callback to handle errors
@@ -46,11 +43,8 @@ M.setup = function()
             -- Check if the path exists before watching
             local stat = vim.loop.fs_stat(path)
             if not stat then
-                -- Path doesn't exist, return a dummy watcher
-                return {
-                    close = function() end,
-                    unwatch = function() end,
-                }
+                -- Path doesn't exist, return a no-op cancel function
+                return function() end
             end
             -- Path exists, use the original watcher
             return original_watchdirs(path, opts, callback)

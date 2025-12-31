@@ -1,7 +1,6 @@
 require("naveen.remap")
 require("naveen.set")
 require("naveen.lsp-file-watcher-fix").setup()
-require("naveen.lsp-shutdown-fix")
 require("naveen.lazy_init")
 
 
@@ -119,94 +118,6 @@ autocmd({ "BufWritePre" }, {
     end,
 })
 
--- Remove formatting from BufWritePre for Go files to allow clean saves
-autocmd("BufWritePre", {
-    pattern = "*.go",
-    callback = function()
-        -- Only remove trailing whitespace before save
-        vim.cmd([[%s/\s\+$//e]])
-    end
-})
-
--- Run formatting and linting after the file is saved
-autocmd("BufWritePost", {
-    pattern = "*.go",
-    callback = function()
-        -- Get the first attached LSP client to determine position encoding
-        local clients = vim.lsp.get_clients({ bufnr = 0 })
-        local client = clients[1]
-        if not client then return end
-        
-        -- Save cursor position
-        local cursor_pos = vim.api.nvim_win_get_cursor(0)
-        
-        -- Organize imports
-        local params = vim.lsp.util.make_range_params(nil, client.offset_encoding)
-        params.context = { only = { "source.organizeImports" } }
-        local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 3000)
-        for cid, res in pairs(result or {}) do
-            for _, r in pairs(res.result or {}) do
-                if r.edit then
-                    local enc = (vim.lsp.get_client_by_id(cid) or {}).offset_encoding or "utf-16"
-                    vim.lsp.util.apply_workspace_edit(r.edit, enc)
-                end
-            end
-        end
-        
-        -- Format with LSP
-        vim.lsp.buf.format({ async = false })
-        
-        -- Run golines on the current file
-        local fileName = vim.fn.expand("%:p")
-        local cmd = string.format("golines -w -m 88 %s", vim.fn.shellescape(fileName))
-        vim.fn.system(cmd)
-        
-        -- Reload the buffer to reflect all changes
-        vim.cmd("edit!")
-        
-        -- Restore cursor position
-        vim.api.nvim_win_set_cursor(0, cursor_pos)
-    end
-})
-
-autocmd("BufWritePost", {
-    pattern = "*.py",
-    callback = function()
-        -- Save cursor position
-        local cursor_pos = vim.api.nvim_win_get_cursor(0)
-        
-        -- Only try LSP format if there's an active LSP client
-        local clients = vim.lsp.get_clients({ bufnr = 0 })
-        if #clients > 0 then
-            vim.lsp.buf.format({ async = false })
-        end
-        
-        -- Run black on the current buffer
-        local fileName = vim.fn.expand("%:p")
-        local cmd = string.format("black --line-length 88 --quiet %s", vim.fn.shellescape(fileName))
-        vim.fn.system(cmd)
-        
-        -- Reload the buffer to reflect all changes
-        vim.cmd("edit!")
-        
-        -- Restore cursor position
-        vim.api.nvim_win_set_cursor(0, cursor_pos)
-    end
-})
-
-
--- Format JSON files with prettier on save
-autocmd("BufWritePost", {
-    pattern = "*.json",
-    callback = function()
-        local cursor_pos = vim.api.nvim_win_get_cursor(0)
-        local fileName = vim.fn.expand("%:p")
-        vim.fn.system(string.format("prettier --write %s", vim.fn.shellescape(fileName)))
-        vim.cmd("edit!")
-        vim.api.nvim_win_set_cursor(0, cursor_pos)
-    end
-})
-
 autocmd('LspAttach', {
     group = NaveenJGroup,
     callback = function(e)
@@ -298,28 +209,18 @@ autocmd("BufWinEnter", {
 })
 
 
--- Auto-load project-specific DAP configurations
+-- Auto-load DAP on startup if project has .nvim-dap.lua
+-- This triggers lazy loading early so project configs work
 autocmd("VimEnter", {
     group = NaveenJGroup,
     callback = function()
         vim.defer_fn(function()
-            -- Only try to load DAP config if DAP is available
-            local has_dap = pcall(require, 'dap')
-            if not has_dap then
-                return
-            end
-            
             local dap_config = vim.fn.getcwd() .. "/.nvim-dap.lua"
             if vim.fn.filereadable(dap_config) == 1 then
-                local ok, err = pcall(dofile, dap_config)
-                if not ok then
-                    -- Only show error if it's not about missing DAP
-                    if not err:match("module 'dap' not found") then
-                        vim.notify("Error loading DAP config: " .. tostring(err), vim.log.levels.ERROR)
-                    end
-                end
+                -- Trigger DAP lazy loading, which loads project config
+                require('dap')
             end
-        end, 100)
+        end, 50)
     end,
 })
 

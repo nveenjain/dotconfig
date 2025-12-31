@@ -1,5 +1,6 @@
 return {
     "neovim/nvim-lspconfig",
+    event = { "BufReadPost", "BufNewFile" },
     dependencies = {
         "williamboman/mason.nvim",
         "williamboman/mason-lspconfig.nvim",
@@ -28,7 +29,7 @@ return {
         require("mason").setup()
         require("mason-lspconfig").setup({
             ensure_installed = {
-                'ts_ls', 'golangci_lint_ls', 'gopls', 'pylsp', 'lua_ls', 'rust_analyzer', 'jsonls'
+                'ts_ls', 'golangci_lint_ls', 'gopls', 'lua_ls', 'rust_analyzer', 'jsonls'
             },
             handlers = {
                 function(server_name) -- default handler (optional)
@@ -67,13 +68,28 @@ return {
                     }
                 end,
                 ["buf_ls"] = function()
-                    local lspconfig = require('lspconfig')
-                    lspconfig.buf_ls.setup {
-                        capabilities = capabilities,
-                    }
+                    -- Disabled in favor of protols which supports protoc-style include paths
                 end,
             }
         })
+
+        -- Setup pyrefly (Facebook's type checker) for Python
+        vim.lsp.config("pyrefly", {
+            cmd = { "/Users/naveen/.pyenv/shims/pyrefly", "lsp" },
+            filetypes = { "python" },
+            root_markers = { "pyproject.toml", "pyrefly.toml", "setup.py", ".git" },
+            capabilities = capabilities,
+        })
+        vim.lsp.enable("pyrefly")
+
+        -- Setup protols for Protocol Buffers (supports protoc-style include paths)
+        vim.lsp.config("protols", {
+            cmd = { "protols" },
+            filetypes = { "proto" },
+            root_markers = { "protols.toml", "buf.yaml", ".git" },
+            capabilities = capabilities,
+        })
+        vim.lsp.enable("protols")
 
         local cmp_select = { behavior = cmp.SelectBehavior.Select }
 

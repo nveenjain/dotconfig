@@ -7,8 +7,6 @@ return {
     cond = vim.g.vscode == nil,
     cmd = { "Telescope" },
     keys = {
-        { '<leader>pf', function() require('telescope.builtin').find_files() end, desc = "Find Files" },
-        { '<C-p>', function() require('telescope.builtin').find_files() end, desc = "Git Files" },
         { '<leader>pws', function()
             local word = vim.fn.expand("<cword>")
             require('telescope.builtin').grep_string({ search = word })
@@ -25,6 +23,7 @@ return {
         { '<leader>vh', function() require('telescope.builtin').help_tags() end, desc = "Help Tags" },
     },
     config = function()
+        local actions = require("telescope.actions")
         require('telescope').setup({
             defaults = {
                 vimgrep_arguments = {
@@ -40,6 +39,16 @@ return {
             pickers = {
                 find_files = {
                     find_command = { "fd", "--type", "f" },
+                },
+                buffers = {
+                    mappings = {
+                        i = {
+                            ["<C-d>"] = actions.delete_buffer,
+                        },
+                        n = {
+                            ["dd"] = actions.delete_buffer,
+                        },
+                    },
                 },
             },
         })

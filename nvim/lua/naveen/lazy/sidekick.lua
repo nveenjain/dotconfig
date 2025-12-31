@@ -14,7 +14,7 @@ return {
         end,
         debounce = 0,
         trigger = {
-          events = { "InsertLeave", "TextChanged", "User SidekickNesDone" }
+          events = { "InsertLeave", "User SidekickNesDone" }
         },
         clear = {
           events = { "InsertEnter" },
@@ -52,7 +52,11 @@ return {
       {
         "<Tab>",
         function()
-          if not require("sidekick").nes_jump_or_apply() then
+          local sidekick = require("sidekick")
+          local result = sidekick.nes_jump_or_apply()
+          if result then
+            return ""
+          else
             return "<Tab>"
           end
         end,

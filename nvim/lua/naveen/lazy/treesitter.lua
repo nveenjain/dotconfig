@@ -1,7 +1,8 @@
 return {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    event = { "BufReadPost", "BufNewFile" },
+    lazy = false,
+    priority = 900,  -- Load before persistence to ensure highlighting works
     cond = vim.g.vscode == nil,
     config = function()
         require('nvim-treesitter.configs').setup ({
@@ -25,19 +26,8 @@ return {
             highlight = {
                 enable = true,
                 disable = function(lang, buf)
-                    -- Respect large_file flag from init.lua
+                    -- Respect large_file flag from init.lua (handles fs_stat already)
                     if vim.b[buf].large_file then
-                        return true
-                    end
-
-                    -- 2MB threshold (matches large_file_threshold in init.lua)
-                    local max_filesize = 2 * 1024 * 1024
-                    if lang == "go" then
-                        max_filesize = 10 * 1024 * 1024 -- 10 MB for Go files
-                    end
-
-                    local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-                    if ok and stats and stats.size > max_filesize then
                         return true
                     end
 
@@ -64,6 +54,7 @@ return {
         })
         -- Custom parser configuration
         vim.treesitter.language.register('templ', 'templ')
+
     end
 
 }

@@ -1,0 +1,187 @@
+-- Cache git root to avoid repeated shell calls
+local cached_git_root = nil
+local function get_git_root()
+    if cached_git_root == nil then
+        local result = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
+        cached_git_root = (result and vim.v.shell_error == 0) and result or false
+    end
+    return cached_git_root
+end
+
+return {
+    {
+        "nvim-neo-tree/neo-tree.nvim",
+        branch = "v3.x",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "nvim-tree/nvim-web-devicons",
+            "MunifTanjim/nui.nvim",
+        },
+        cond = vim.g.vscode == nil,
+        keys = {
+            {
+                "<leader>e",
+                function()
+                    local git_root = get_git_root()
+                    if git_root then
+                        vim.cmd("Neotree toggle dir=" .. vim.fn.fnameescape(git_root))
+                    else
+                        vim.cmd("Neotree toggle")
+                    end
+                end,
+                desc = "Toggle Neo-tree"
+            },
+            {
+                "<leader>pv",
+                function()
+                    local git_root = get_git_root()
+                    if git_root then
+                        vim.cmd("Neotree reveal dir=" .. vim.fn.fnameescape(git_root))
+                    else
+                        vim.cmd("Neotree reveal")
+                    end
+                end,
+                desc = "Reveal file in Neo-tree"
+            },
+        },
+        opts = {
+            close_if_last_window = true,
+            enable_git_status = true,
+            enable_diagnostics = true,
+            source_selector = {
+                winbar = false,
+                statusline = false,
+            },
+            filesystem = {
+                bind_to_cwd = false,  -- Don't change root when cwd changes
+                cwd_target = {
+                    sidebar = "none",  -- Don't change root for sidebar
+                    current = "none",
+                },
+                follow_current_file = {
+                    enabled = true,
+                    leave_dirs_open = true,
+                },
+                use_libuv_file_watcher = true,
+                filtered_items = {
+                    visible = true,
+                    hide_dotfiles = false,
+                    hide_gitignored = false,
+                },
+                -- Find and use git root as the tree root
+                find_by_full_path_words = true,
+            },
+            window = {
+                position = "left",
+                width = 35,
+                mappings = {
+                    ["<C-c>"] = "close_window",
+                    ["<Esc>"] = "close_window",
+                    ["q"] = "close_window",
+                    ["<cr>"] = "open",
+                    ["<C-v>"] = "open_vsplit",
+                    ["<C-s>"] = "open_split",
+                    ["<C-t>"] = "open_tabnew",
+                    ["P"] = { "toggle_preview", config = { use_float = true } },
+                    ["a"] = "add",
+                    ["d"] = "delete",
+                    ["r"] = "rename",
+                    ["y"] = "copy_to_clipboard",
+                    ["x"] = "cut_to_clipboard",
+                    ["p"] = "paste_from_clipboard",
+                    ["H"] = "toggle_hidden",
+                    ["R"] = "refresh",
+                    ["?"] = "show_help",
+                },
+            },
+            default_component_configs = {
+                diagnostics = {
+                    symbols = {
+                        hint = "󰌵",
+                        info = "",
+                        warn = "",
+                        error = "",
+                    },
+                    highlights = {
+                        hint = "DiagnosticSignHint",
+                        info = "DiagnosticSignInfo",
+                        warn = "DiagnosticSignWarn",
+                        error = "DiagnosticSignError",
+                    },
+                },
+                git_status = {
+                    symbols = {
+                        added = "+",
+                        modified = "~",
+                        deleted = "x",
+                        renamed = "r",
+                        untracked = "?",
+                        ignored = "◌",
+                        unstaged = "○",
+                        staged = "●",
+                        conflict = "!",
+                    },
+                },
+            },
+        },
+        config = function(_, opts)
+            -- Custom git status colors
+            vim.api.nvim_set_hl(0, "NeoTreeGitAdded", { fg = "#98c379" })     -- green
+            vim.api.nvim_set_hl(0, "NeoTreeGitModified", { fg = "#e5c07b" })  -- yellow
+            vim.api.nvim_set_hl(0, "NeoTreeGitDeleted", { fg = "#e06c75" })   -- red
+            vim.api.nvim_set_hl(0, "NeoTreeGitUntracked", { fg = "#56b6c2" }) -- cyan
+            vim.api.nvim_set_hl(0, "NeoTreeGitConflict", { fg = "#e06c75", bold = true })
+            vim.api.nvim_set_hl(0, "NeoTreeGitStaged", { fg = "#98c379" })    -- green
+            vim.api.nvim_set_hl(0, "NeoTreeGitUnstaged", { fg = "#e5c07b" })  -- yellow
+
+            require("neo-tree").setup(opts)
+
+            -- Close neo-tree before session save to prevent broken restore
+            vim.api.nvim_create_autocmd("User", {
+                pattern = "PersistenceSavePre",
+                callback = function()
+                    vim.cmd("Neotree close")
+                end,
+            })
+
+            -- Ensure neo-tree is closed on startup (in case session restored it)
+            vim.api.nvim_create_autocmd("VimEnter", {
+                callback = function()
+                    vim.defer_fn(function()
+                        vim.cmd("Neotree close")
+                    end, 10)
+                end,
+            })
+
+            -- When navigating from fugitive, ensure neo-tree stays at git root
+            vim.api.nvim_create_autocmd("BufEnter", {
+                callback = function(args)
+                    local prev_buf = vim.fn.bufnr('#')
+                    if prev_buf == -1 then return end
+
+                    local prev_ft = vim.bo[prev_buf].filetype
+                    if prev_ft ~= "fugitive" then return end
+
+                    -- Check if neo-tree is open
+                    for _, win in ipairs(vim.api.nvim_list_wins()) do
+                        local buf = vim.api.nvim_win_get_buf(win)
+                        if vim.bo[buf].filetype == "neo-tree" then
+                            vim.defer_fn(function()
+                                local git_root = get_git_root()
+                                if git_root then
+                                    local path = vim.api.nvim_buf_get_name(args.buf)
+                                    if path ~= "" then
+                                        vim.cmd("Neotree dir=" .. vim.fn.fnameescape(git_root) .. " reveal_file=" .. vim.fn.fnameescape(path))
+                                    else
+                                        vim.cmd("Neotree dir=" .. vim.fn.fnameescape(git_root))
+                                    end
+                                end
+                            end, 50)
+                            return
+                        end
+                    end
+                end,
+            })
+        end,
+    },
+}

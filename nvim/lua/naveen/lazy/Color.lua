@@ -93,8 +93,6 @@ return {
 				livePreview = true,
 				globalAfter = [[BgColor()]],
 			})
-			-- Set default theme on startup (themery will override if persisted)
-			vim.cmd.colorscheme("tokyonight-night")
 			BgColor()
 		end,
 	},

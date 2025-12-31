@@ -73,7 +73,11 @@ return {
                 virt_text_win_col = nil
             })
 
-            -- Golang configuration
+            -- Initialize config tables BEFORE language-specific setup
+            dap.configurations.go = dap.configurations.go or {}
+            dap.configurations.python = dap.configurations.python or {}
+
+            -- Golang configuration with outputMode baked in
             require("dap-go").setup({
                 dap_configurations = {
                     {
@@ -81,46 +85,63 @@ return {
                         name = "Attach remote",
                         mode = "remote",
                         request = "attach",
-                                            },
+                    },
                 },
                 delve = {
                     path = "dlv",
                     initialize_timeout_sec = 20,
                     port = "${port}",
                     args = {},
+                    -- Key fix: set output_mode here so dap-go uses it
+                    output_mode = "remote",
                 },
             })
-            
-            -- Override default dap-go configurations to use delve
-            vim.defer_fn(function()
-                if dap.configurations.go then
-                    for _, config in ipairs(dap.configurations.go) do
-                        if config.type == "go" then
-                            config.type = "delve"
-                            config.outputMode = "remote"
-                        end
-                    end
+
+            -- Ensure ALL go configurations have outputMode = "remote"
+            -- Run immediately after dap-go setup (not deferred)
+            for _, config in ipairs(dap.configurations.go) do
+                config.outputMode = "remote"
+                -- Also ensure type is delve for consistency
+                if config.type == "go" then
+                    config.type = "delve"
                 end
-            end, 100)
-            
-            -- Ensure delve adapter is configured
-            dap.adapters.delve = {
-                type = 'server',
-                port = '${port}',
-                executable = {
-                    command = 'dlv',
-                    args = {'dap', '-l', '127.0.0.1:${port}'},
-                },
-                options = {
-                    initialize_timeout_sec = 30,
-                }
-            }
-            
-            
-            
+            end
+
+            -- Configure delve adapter (matches dap-go but with explicit output handling)
+            dap.adapters.delve = function(callback, config)
+                -- Use dap-go's adapter but ensure proper setup
+                local port = config.port or "${port}"
+                if port == "${port}" then
+                    port = 38697 + math.random(1000)
+                end
+
+                callback({
+                    type = 'server',
+                    port = port,
+                    executable = {
+                        command = 'dlv',
+                        args = { 'dap', '-l', '127.0.0.1:' .. port },
+                    },
+                    options = {
+                        initialize_timeout_sec = 30,
+                    },
+                })
+            end
 
             -- Python configuration
             require("dap-python").setup("python3")
+
+            -- Load project-specific DAP config AFTER all language setups
+            local function load_project_dap_config()
+                local dap_config = vim.fn.getcwd() .. "/.nvim-dap.lua"
+                if vim.fn.filereadable(dap_config) == 1 then
+                    local ok, err = pcall(dofile, dap_config)
+                    if not ok then
+                        vim.notify("DAP config error: " .. tostring(err), vim.log.levels.ERROR)
+                    end
+                end
+            end
+            load_project_dap_config()
 
             -- Python test configurations
             table.insert(dap.configurations.python, {
@@ -297,13 +318,54 @@ return {
             
             -- DAP UI listeners
             dap.listeners.after.event_initialized["dapui_config"] = function()
-                dapui.open()
+                -- Close first to avoid invalid window errors on restart
+                pcall(dapui.close)
+
+                -- Clear console and repl buffers on restart
+                for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+                    if vim.api.nvim_buf_is_valid(buf) then
+                        local ft = vim.bo[buf].filetype
+                        if ft == "dapui_console" or ft == "dap-repl" then
+                            -- Temporarily make buffer modifiable to clear it
+                            local was_modifiable = vim.bo[buf].modifiable
+                            vim.bo[buf].modifiable = true
+                            pcall(vim.api.nvim_buf_set_lines, buf, 0, -1, false, {})
+                            vim.bo[buf].modifiable = was_modifiable
+                        end
+                    end
+                end
+
+                pcall(dapui.open, { reset = true })
+                -- Re-enable Copilot in code buffers when debugging starts
+                vim.api.nvim_create_autocmd("BufEnter", {
+                    group = vim.api.nvim_create_augroup("DapCopilotFix", { clear = true }),
+                    callback = function()
+                        local ft = vim.bo.filetype
+                        local dap_filetypes = {
+                            ["dap-repl"] = true,
+                            dapui_watches = true,
+                            dapui_stacks = true,
+                            dapui_breakpoints = true,
+                            dapui_scopes = true,
+                            dapui_console = true,
+                        }
+                        if not dap_filetypes[ft] and ft ~= "" then
+                            pcall(function()
+                                require("copilot.command").enable()
+                            end)
+                        end
+                    end,
+                })
             end
             dap.listeners.before.event_terminated["dapui_config"] = function()
                 dapui.close()
+                -- Clean up the Copilot fix autocmd
+                pcall(vim.api.nvim_del_augroup_by_name, "DapCopilotFix")
             end
             dap.listeners.before.event_exited["dapui_config"] = function()
                 dapui.close()
+                -- Clean up the Copilot fix autocmd
+                pcall(vim.api.nvim_del_augroup_by_name, "DapCopilotFix")
             end
             
             
@@ -364,7 +426,7 @@ return {
             vim.fn.sign_define("DapStopped", { text = "▶", texthl = "DapStopped", linehl = "DapStopped", numhl = "DapStopped" })
             vim.fn.sign_define("DapBreakpointRejected", { text = "✗", texthl = "DapBreakpointRejected", linehl = "", numhl = "" })
 
-            -- DAP logging (WARN to reduce disk I/O, change to TRACE for debugging)
+            -- DAP logging (change to TRACE for debugging)
             dap.set_log_level('WARN')
             
             -- Keybindings
@@ -373,10 +435,10 @@ return {
             vim.keymap.set("n", "<leader>di", function() dap.step_into() end, { desc = "Debug: Step Into" })
             vim.keymap.set("n", "<leader>do", function() dap.step_out() end, { desc = "Debug: Step Out" })
             vim.keymap.set("n", "<leader>db", function() dap.toggle_breakpoint() end, { desc = "Debug: Toggle Breakpoint" })
-            vim.keymap.set("n", "<leader>dB", function()
+            vim.keymap.set("n", "<leader>dbc", function()
                 dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
             end, { desc = "Debug: Set Conditional Breakpoint" })
-            vim.keymap.set("n", "<leader>dl", function()
+            vim.keymap.set("n", "<leader>dbl", function()
                 dap.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
             end, { desc = "Debug: Set Log Point" })
             vim.keymap.set("n", "<leader>dr", function() dap.repl.open() end, { desc = "Debug: Open REPL" })
