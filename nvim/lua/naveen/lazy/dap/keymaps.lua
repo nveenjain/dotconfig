@@ -64,6 +64,16 @@ function M.setup(dap, dapui, breakpoints)
     set("n", "<leader>dq", function() dap.disconnect() end, { desc = "Debug: Quit/Disconnect" })
     set("n", "<leader>dl", "<cmd>DapShowLog<CR>", { desc = "Debug: Show Log" })
 
+    -- Multi-session management
+    local sessions = require("naveen.lazy.dap.sessions")
+    set("n", "<leader>dN", sessions.run_new, { desc = "Debug: Start New Session" })
+    set("n", "<leader>dss", sessions.switch_picker, { desc = "Debug: Switch Session" })
+    set("n", "<leader>dsx", sessions.terminate_picker, { desc = "Debug: Terminate Session (pick)" })
+    set("n", "<leader>dso", function()
+        require("naveen.lazy.dap.output").show_output()
+    end, { desc = "Debug: Show Session Output" })
+    set("n", "<leader>dA", sessions.terminate_all, { desc = "Debug: Terminate All Sessions" })
+
     -- Breakpoint management
     set("n", "<leader>dS", breakpoints.save, { desc = "Debug: Save Breakpoints" })
     set("n", "<leader>dR", breakpoints.load, { desc = "Debug: Restore Breakpoints" })

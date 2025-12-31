@@ -49,14 +49,6 @@ return {
                         size = 40,
                         position = "left",
                     },
-                    {
-                        elements = {
-                            { id = "repl", size = 0.5 },
-                            { id = "console", size = 0.5 },
-                        },
-                        size = 10,
-                        position = "bottom",
-                    },
                 },
             })
 
@@ -93,20 +85,24 @@ return {
             end
             load_project_dap_config()
 
-            -- DAP UI listeners
-            dap.listeners.after.event_initialized["dapui_config"] = function()
+            -- DAP UI listeners (use proper DAP signature: session, body)
+            dap.listeners.after.event_initialized["dapui_config"] = function(session, body)
                 -- Close first to avoid invalid window errors on restart
                 pcall(dapui.close)
 
-                -- Clear console and repl buffers on restart
-                for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-                    if vim.api.nvim_buf_is_valid(buf) then
-                        local ft = vim.bo[buf].filetype
-                        if ft == "dapui_console" or ft == "dap-repl" then
-                            local was_modifiable = vim.bo[buf].modifiable
-                            vim.bo[buf].modifiable = true
-                            pcall(vim.api.nvim_buf_set_lines, buf, 0, -1, false, {})
-                            vim.bo[buf].modifiable = was_modifiable
+                -- Clear console and repl buffers only if this is the first/only session
+                -- (don't wipe logs from other running sessions)
+                local session_count = vim.tbl_count(dap.sessions())
+                if session_count <= 1 then
+                    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+                        if vim.api.nvim_buf_is_valid(buf) then
+                            local ft = vim.bo[buf].filetype
+                            if ft == "dapui_console" or ft == "dap-repl" then
+                                local was_modifiable = vim.bo[buf].modifiable
+                                vim.bo[buf].modifiable = true
+                                pcall(vim.api.nvim_buf_set_lines, buf, 0, -1, false, {})
+                                vim.bo[buf].modifiable = was_modifiable
+                            end
                         end
                     end
                 end
@@ -127,13 +123,17 @@ return {
                 })
             end
 
-            local function close_dap_ui()
-                dapui.close()
-                pcall(vim.api.nvim_del_augroup_by_name, "NavDapCopilot")
+            -- Only close DAP UI when the last session ends (multi-session aware)
+            local function close_dap_ui_if_last(session, body)
+                local remaining = vim.tbl_count(dap.sessions())
+                if remaining <= 1 then
+                    dapui.close()
+                    pcall(vim.api.nvim_del_augroup_by_name, "NavDapCopilot")
+                end
             end
 
-            dap.listeners.before.event_terminated["dapui_config"] = close_dap_ui
-            dap.listeners.before.event_exited["dapui_config"] = close_dap_ui
+            dap.listeners.before.event_terminated["dapui_config"] = close_dap_ui_if_last
+            dap.listeners.before.event_exited["dapui_config"] = close_dap_ui_if_last
 
             -- Auto-scroll REPL to bottom when new output arrives
             local repl = require("dap.repl")
@@ -191,9 +191,10 @@ return {
             -- DAP logging
             dap.set_log_level("WARN")
 
-            -- Set up keymaps and breakpoint persistence
+            -- Set up keymaps, breakpoint persistence, and per-session output
             keymaps.setup(dap, dapui, breakpoints)
             breakpoints.setup(dap)
+            require("naveen.lazy.dap.output").setup(dap)
         end,
     },
 }
