@@ -5,7 +5,8 @@
 local M = {}
 
 -- File size thresholds
-M.LARGE_FILE_THRESHOLD = 2 * 1024 * 1024  -- 2MB - files larger than this get special handling
+M.LARGE_FILE_THRESHOLD = 512 * 1024           -- 512KB - files larger than this get optimized handling
+M.VERY_LARGE_FILE_THRESHOLD = 2 * 1024 * 1024 -- 2MB - syntax disabled entirely
 
 -- Timing constants (in milliseconds)
 M.LSP_RESTART_DELAY = 100      -- Delay before restarting LSP

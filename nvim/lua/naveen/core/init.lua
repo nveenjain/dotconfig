@@ -15,6 +15,7 @@ M.git = require("naveen.core.git")
 M.env = require("naveen.core.env")
 M.autocmd = require("naveen.core.autocmd")
 M.highlights = require("naveen.core.highlights")
+M.performance = require("naveen.core.performance")
 
 -- Convenience re-exports for common operations
 -- These can be accessed directly: core.not_vscode() instead of core.vscode.not_vscode()

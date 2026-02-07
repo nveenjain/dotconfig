@@ -40,16 +40,24 @@ vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]], { desc = "Yank: To clipboard"
 vim.keymap.set("n", "<leader>Y", [["+Y]], { desc = "Yank: Line to clipboard" })
 
 -- Delete to void register
-vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]], { desc = "Delete: To void" })
+vim.keymap.set({ "n", "v" }, "<leader>D", [["_d]], { desc = "Delete: To void" })
+
+-- Turbo paste for large clipboard content (disables expensive features during paste)
+local performance = require("naveen.core.performance")
+vim.keymap.set("n", "<leader>P", function()
+    performance.turbo_paste('"+p')
+end, { desc = "Paste: Turbo from clipboard (after)" })
+
+vim.keymap.set("n", "<leader>gP", function()
+    performance.turbo_paste('"+P')
+end, { desc = "Paste: Turbo from clipboard (before)" })
 
 --------------------------------------------------------------------------------
 -- Editing
 --------------------------------------------------------------------------------
 
--- Make C-c trigger InsertLeave like Esc does
-vim.keymap.set("i", "<C-c>", function()
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
-end, { desc = "Exit insert mode" })
+-- Make C-c trigger InsertLeave like Esc does (works in macros)
+vim.keymap.set("i", "<C-c>", "<Esc>", { desc = "Exit insert mode" })
 
 -- Disable Q (ex mode)
 vim.keymap.set("n", "Q", "<nop>")

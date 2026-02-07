@@ -30,10 +30,19 @@ vim.api.nvim_create_autocmd("BufReadPre", {
             -- Mark as large file BEFORE loading
             vim.b[args.buf].large_file = true
 
+            -- Suppress autocmds during load for faster opening
+            vim.b[args.buf].saved_eventignore = vim.o.eventignore
+            vim.o.eventignore = "FileType,Syntax,BufEnter,BufWinEnter,WinEnter"
+
             -- Disable I/O overhead immediately
             vim.bo[args.buf].swapfile = false
             vim.bo[args.buf].undofile = false
             vim.bo[args.buf].undolevels = constants.UNDO_LEVELS_LARGE_FILE
+
+            -- Very large files: mark for syntax disable
+            if stats.size > constants.VERY_LARGE_FILE_THRESHOLD then
+                vim.b[args.buf].very_large_file = true
+            end
         end
     end,
 })
@@ -41,6 +50,12 @@ vim.api.nvim_create_autocmd("BufReadPre", {
 vim.api.nvim_create_autocmd("BufReadPost", {
     group = main_group,
     callback = function(args)
+        -- Restore eventignore
+        if vim.b[args.buf].saved_eventignore ~= nil then
+            vim.o.eventignore = vim.b[args.buf].saved_eventignore
+            vim.b[args.buf].saved_eventignore = nil
+        end
+
         if not vim.b[args.buf].large_file then
             return
         end
@@ -54,12 +69,18 @@ vim.api.nvim_create_autocmd("BufReadPost", {
         vim.opt_local.relativenumber = false
         vim.opt_local.cursorline = false
         vim.opt_local.colorcolumn = ""
+        vim.opt_local.synmaxcol = 120
 
-        -- Keep vim syntax ON (fast, immediate highlighting)
         -- Disable treesitter (too heavy for large files)
         pcall(vim.treesitter.stop, args.buf)
 
-        vim.notify(string.format("Large file (%.1f MB) - using vim syntax", size_mb), vim.log.levels.INFO)
+        if vim.b[args.buf].very_large_file then
+            -- Very large files: disable syntax entirely
+            vim.cmd("syntax off")
+            vim.notify(string.format("Very large file (%.1f MB) - syntax disabled", size_mb), vim.log.levels.WARN)
+        else
+            vim.notify(string.format("Large file (%.1f MB) - using vim syntax", size_mb), vim.log.levels.INFO)
+        end
     end,
 })
 

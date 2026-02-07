@@ -4,7 +4,7 @@ return {
     cmd = { "ConformInfo" },
     opts = {
         formatters_by_ft = {
-            go = { "goimports", "gofumpt", "golines" },
+            go = { "golines", "gci" },  -- golines formats + wraps; gci runs LAST to fix import order
             python = { "black" },
             json = { "prettier" },
         },
@@ -15,11 +15,30 @@ return {
                 return nil
             end
             return {
-                timeout_ms = 3000,
+                timeout_ms = 5000,
                 lsp_fallback = true,
             }
         end,
         formatters = {
+            gci = {
+                args = function()
+                    local result = { "write", "--skip-generated", "--skip-vendor", "--custom-order",
+                        "--section", "standard" }
+                    -- Detect local module from go.mod for import grouping
+                    local gomod = vim.fn.findfile("go.mod", ".;")
+                    if gomod ~= "" then
+                        local lines = vim.fn.readfile(gomod, "", 1)
+                        if lines[1] then
+                            local module = lines[1]:match("^module%s+(%S+)")
+                            if module then
+                                vim.list_extend(result, { "--section", "prefix(" .. module .. ")" })
+                            end
+                        end
+                    end
+                    vim.list_extend(result, { "--section", "default", "--section", "blank", "$FILENAME" })
+                    return result
+                end,
+            },
             golines = {
                 prepend_args = { "-m", "88" },
             },

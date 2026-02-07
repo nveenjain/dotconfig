@@ -29,7 +29,7 @@ return {
         require("mason").setup()
         require("mason-lspconfig").setup({
             ensure_installed = {
-                'ts_ls', 'golangci_lint_ls', 'gopls', 'lua_ls', 'rust_analyzer', 'jsonls'
+                'ts_ls', 'golangci_lint_ls', 'gopls', 'lua_ls', 'rust_analyzer', 'jsonls', 'pyright'
             },
             handlers = {
                 function(server_name) -- default handler (optional)
@@ -52,6 +52,19 @@ return {
                 end,
                 ["gopls"] = function()
                     local lspconfig = require('lspconfig')
+
+                    -- Detect local module from go.mod for import grouping
+                    local function get_local_module()
+                        local gomod = vim.fn.findfile("go.mod", ".;")
+                        if gomod ~= "" then
+                            local lines = vim.fn.readfile(gomod, "", 1)
+                            if lines[1] then
+                                return lines[1]:match("^module%s+(%S+)") or ""
+                            end
+                        end
+                        return ""
+                    end
+
                     lspconfig.gopls.setup {
                         capabilities = capabilities,
                         settings = {
@@ -59,10 +72,12 @@ return {
                                 staticcheck = true,
                                 gofumpt = true,
                                 usePlaceholders = true,
+                                completeUnimported = true,
                                 analyses = {
                                     unusedparams = true,
                                     shadow = true,
                                 },
+                                ["local"] = get_local_module(),
                             },
                         },
                     }
@@ -70,17 +85,20 @@ return {
                 ["buf_ls"] = function()
                     -- Disabled in favor of protols which supports protoc-style include paths
                 end,
+                ["pyright"] = function()
+                    local lspconfig = require("lspconfig")
+                    lspconfig.pyright.setup {
+                        capabilities = capabilities,
+                        settings = {
+                            python = {
+                                venvPath = ".",
+                                venv = ".venv",
+                            },
+                        },
+                    }
+                end,
             }
         })
-
-        -- Setup pyrefly (Facebook's type checker) for Python
-        vim.lsp.config("pyrefly", {
-            cmd = { "/Users/naveen/.pyenv/shims/pyrefly", "lsp" },
-            filetypes = { "python" },
-            root_markers = { "pyproject.toml", "pyrefly.toml", "setup.py", ".git" },
-            capabilities = capabilities,
-        })
-        vim.lsp.enable("pyrefly")
 
         -- Setup protols for Protocol Buffers (supports protoc-style include paths)
         vim.lsp.config("protols", {
