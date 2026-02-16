@@ -48,7 +48,8 @@ vim.opt.redrawtime = 2000   -- Prevent freezes on complex files (was 10000)
 vim.g.syntax_on = true      -- Ensure syntax is enabled
 
 -- Performance optimizations
-vim.opt.lazyredraw = true   -- Don't redraw during macros/commands
+-- NOTE: lazyredraw removed - deprecated in Neovim 0.11, prevents
+-- treesitter/LSP highlights from rendering until manual :e
 vim.opt.shortmess:append({
     W = true,  -- Don't print "written" when writing
     I = true,  -- Don't show intro message

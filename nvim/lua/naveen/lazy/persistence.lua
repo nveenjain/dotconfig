@@ -20,14 +20,22 @@ return {
 
           local function restore_session()
             require("persistence").load()
-            -- Filetype detection doesn't run on session restore, trigger it
+            -- Session restore doesn't fire BufReadPost for restored buffers,
+            -- so lazy-loaded plugins (LSP, sidekick) never load. Re-trigger events.
             vim.schedule(function()
               for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-                if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buftype == "" and vim.bo[buf].filetype == "" then
-                  vim.api.nvim_buf_call(buf, function()
-                    vim.cmd("filetype detect")
-                  end)
+                if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buftype == "" then
+                  if vim.bo[buf].filetype == "" then
+                    vim.api.nvim_buf_call(buf, function()
+                      vim.cmd("filetype detect")
+                    end)
+                  end
                 end
+              end
+              -- Re-trigger BufReadPost for the current buffer to kick off lazy plugins
+              local buf = vim.api.nvim_get_current_buf()
+              if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buftype == "" then
+                vim.api.nvim_exec_autocmds("BufReadPost", { buffer = buf })
               end
             end)
           end
