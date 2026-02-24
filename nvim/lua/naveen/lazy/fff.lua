@@ -5,7 +5,6 @@ return {
             require("fff.download").download_or_build_binary()
         end,
         cond = vim.g.vscode == nil,
-        lazy = false,
         keys = {
             {
                 "<C-p>",

@@ -1,3 +1,7 @@
+-- Set background early to prevent Neovim 0.11 TUI from sending OSC 11
+-- terminal query that hangs in tmux with allow-passthrough
+vim.o.background = "dark"
+
 vim.opt.nu = true
 vim.opt.relativenumber = true
 
@@ -23,7 +27,7 @@ vim.opt.scrolloff = 8
 vim.opt.signcolumn = "yes"
 vim.opt.isfname:append("@-@")
 
-vim.opt.updatetime = 50  -- Controls how long to wait before triggering CursorHold events (affects NES in insert mode)
+vim.opt.updatetime = 300  -- Controls how long to wait before triggering CursorHold events
 
 vim.opt.colorcolumn = "88"
 
@@ -45,7 +49,7 @@ vim.opt.fillchars = {
 -- Increase syntax highlighting limits for large files
 vim.opt.synmaxcol = 300     -- Syntax highlight up to 300 columns (default is 3000)
 vim.opt.redrawtime = 2000   -- Prevent freezes on complex files (was 10000)
-vim.g.syntax_on = true      -- Ensure syntax is enabled
+-- vim.g.syntax_on removed - redundant, Neovim enables syntax by default
 
 -- Performance optimizations
 -- NOTE: lazyredraw removed - deprecated in Neovim 0.11, prevents

@@ -26,6 +26,39 @@ return {
             cmp_lsp.default_capabilities())
 
         require("fidget").setup({})
+
+        -- Organize imports on save via gopls (adds missing, removes unused)
+        vim.api.nvim_create_autocmd("LspAttach", {
+            callback = function(args)
+                local client = vim.lsp.get_client_by_id(args.data.client_id)
+                if not client or client.name ~= "gopls" then
+                    return
+                end
+                local bufnr = args.buf
+                vim.api.nvim_create_autocmd("BufWritePre", {
+                    buffer = bufnr,
+                    callback = function()
+                        local params = {
+                            textDocument = { uri = vim.uri_from_bufnr(bufnr) },
+                            range = {
+                                start = { line = 0, character = 0 },
+                                ["end"] = { line = vim.api.nvim_buf_line_count(bufnr) - 1, character = 0 },
+                            },
+                            context = { only = { "source.organizeImports" } },
+                        }
+                        local result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 3000)
+                        for _, res in pairs(result or {}) do
+                            for _, r in pairs(res.result or {}) do
+                                if r.edit then
+                                    vim.lsp.util.apply_workspace_edit(r.edit, client.offset_encoding or "utf-16")
+                                end
+                            end
+                        end
+                    end,
+                })
+            end,
+        })
+
         require("mason").setup()
         require("mason-lspconfig").setup({
             ensure_installed = {
@@ -69,15 +102,15 @@ return {
                         capabilities = capabilities,
                         settings = {
                             gopls = {
-                                staticcheck = true,
+                                staticcheck = false,
                                 gofumpt = true,
                                 usePlaceholders = true,
                                 completeUnimported = true,
                                 analyses = {
                                     unusedparams = true,
-                                    shadow = true,
                                 },
                                 ["local"] = get_local_module(),
+                                directoryFilters = { "-vendor", "-node_modules", "-testdata", "-.git" },
                             },
                         },
                     }
@@ -146,7 +179,7 @@ return {
                 focusable = true,
                 style = "minimal",
                 border = "rounded",
-                source = "always",
+                source = true,
                 header = "",
                 prefix = "",
             },

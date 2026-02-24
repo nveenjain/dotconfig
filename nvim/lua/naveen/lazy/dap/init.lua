@@ -26,6 +26,7 @@ return {
             dap.defaults.fallback.connect_timeout_fn = function()
                 return constants.DAP_TIMEOUT
             end
+            dap.defaults.fallback.request_timeout = constants.DAP_TIMEOUT
 
             -- DAP UI setup
             dapui.setup({

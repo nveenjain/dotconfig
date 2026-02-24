@@ -43,6 +43,13 @@ function M.clear_cache()
     cached_git_root = nil
 end
 
+-- Auto-clear cache on directory change (worktree switch, :cd, etc.)
+vim.api.nvim_create_autocmd("DirChanged", {
+    callback = function()
+        cached_git_root = nil
+    end,
+})
+
 --- Execute a git command safely
 ---@param args string The git command arguments
 ---@return string|nil # The command output, or nil on error

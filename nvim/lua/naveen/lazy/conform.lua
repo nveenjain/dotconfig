@@ -15,14 +15,15 @@ return {
                 return nil
             end
             return {
-                timeout_ms = 5000,
-                lsp_fallback = true,
+                timeout_ms = 2000,
+                lsp_format = "never",
             }
         end,
         formatters = {
             gci = {
+                stdin = true,
                 args = function()
-                    local result = { "write", "--skip-generated", "--skip-vendor", "--custom-order",
+                    local result = { "print", "--skip-generated", "--skip-vendor", "--custom-order",
                         "--section", "standard" }
                     -- Detect local module from go.mod for import grouping
                     local gomod = vim.fn.findfile("go.mod", ".;")
@@ -35,12 +36,12 @@ return {
                             end
                         end
                     end
-                    vim.list_extend(result, { "--section", "default", "--section", "blank", "$FILENAME" })
+                    vim.list_extend(result, { "--section", "default", "--section", "blank" })
                     return result
                 end,
             },
             golines = {
-                prepend_args = { "-m", "88" },
+                prepend_args = { "-m", "88", "--base-formatter", "gofumpt" },
             },
             black = {
                 prepend_args = { "--line-length", "88" },

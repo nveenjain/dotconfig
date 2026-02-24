@@ -17,8 +17,16 @@ local function get_or_create_buffer(session)
     end
 
     local name = session.config.name or "unnamed"
+    local buf_name = string.format("dap-output://%d-%s", session_id, name)
+
+    -- Wipe any stale buffer with the same name (e.g. from a previous run)
+    local existing = vim.fn.bufnr(buf_name)
+    if existing ~= -1 then
+        pcall(vim.api.nvim_buf_delete, existing, { force = true })
+    end
+
     local buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_name(buf, string.format("dap-output://%d-%s", session_id, name))
+    vim.api.nvim_buf_set_name(buf, buf_name)
     vim.bo[buf].filetype = "dap-output"
     vim.bo[buf].bufhidden = "hide"
     vim.bo[buf].modifiable = false

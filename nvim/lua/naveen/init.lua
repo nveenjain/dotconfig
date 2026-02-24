@@ -25,7 +25,7 @@ local yank_group = autocmd.create_group("yank")
 vim.api.nvim_create_autocmd("BufReadPre", {
     group = main_group,
     callback = function(args)
-        local ok, stats = pcall(vim.loop.fs_stat, args.file)
+        local ok, stats = pcall(vim.uv.fs_stat, args.file)
         if ok and stats and stats.size > constants.LARGE_FILE_THRESHOLD then
             -- Mark as large file BEFORE loading
             vim.b[args.buf].large_file = true
@@ -60,7 +60,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
             return
         end
 
-        local stats_ok, stats = pcall(vim.loop.fs_stat, args.file)
+        local stats_ok, stats = pcall(vim.uv.fs_stat, args.file)
         local size_mb = stats_ok and stats and (stats.size / 1024 / 1024) or 0
 
         -- Disable visual overhead for fast scrolling
@@ -137,10 +137,10 @@ vim.api.nvim_create_user_command("Eq", "EditQuery", {})
 
 -- Custom LspRestart to avoid watchfiles error
 vim.api.nvim_create_user_command("LspRestart", function()
-    local clients = vim.lsp.get_active_clients()
+    local clients = vim.lsp.get_clients()
     for _, client in ipairs(clients) do
-        local attached_buffers = vim.lsp.get_buffers_by_client_id(client.id)
-        local ok, err = pcall(vim.lsp.stop_client, client.id)
+        local attached_buffers = vim.tbl_keys(client.attached_buffers or {})
+        local ok, err = pcall(client.stop, client)
         if not ok then
             vim.notify("Error stopping LSP client: " .. tostring(err), vim.log.levels.WARN)
         end
@@ -163,12 +163,13 @@ end, {})
 -- Buffer Write Hooks
 --------------------------------------------------------------------------------
 
--- Remove trailing whitespace on save (except for proto files)
+-- Remove trailing whitespace on save (skip filetypes where formatters handle it)
 vim.api.nvim_create_autocmd("BufWritePre", {
     group = main_group,
     pattern = "*",
     callback = function()
-        if vim.bo.filetype ~= "proto" then
+        local skip = { proto = true, go = true, gitcommit = true, gitrebase = true }
+        if not skip[vim.bo.filetype] then
             vim.cmd([[%s/\s\+$//e]])
         end
     end,

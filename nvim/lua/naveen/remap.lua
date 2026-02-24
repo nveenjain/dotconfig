@@ -63,7 +63,7 @@ vim.keymap.set("i", "<C-c>", "<Esc>", { desc = "Exit insert mode" })
 vim.keymap.set("n", "Q", "<nop>")
 
 -- Format current buffer
-vim.keymap.set("n", "<leader>f", vim.lsp.buf.format, { desc = "LSP: Format buffer" })
+vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format() end, { desc = "LSP: Format buffer" })
 
 -- Search and replace word under cursor
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], { desc = "Search: Replace word" })
@@ -152,8 +152,8 @@ end, { desc = "Window: Toggle maximize" })
 --------------------------------------------------------------------------------
 
 vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float, { desc = "Diagnostic: Open float" })
-vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Diagnostic: Previous" })
-vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Diagnostic: Next" })
+vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, { desc = "Diagnostic: Previous" })
+vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, { desc = "Diagnostic: Next" })
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Diagnostic: To loclist" })
 
 --------------------------------------------------------------------------------

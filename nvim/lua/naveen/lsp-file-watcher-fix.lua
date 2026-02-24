@@ -13,7 +13,7 @@ M.setup = function()
     if original_watch then
         watch.watch = function(path, opts, callback)
             -- Check if the path exists before watching
-            local stat = vim.loop.fs_stat(path)
+            local stat = vim.uv.fs_stat(path)
             if not stat then
                 -- Path doesn't exist, return a no-op cancel function
                 return function() end
@@ -41,7 +41,7 @@ M.setup = function()
     if original_watchdirs then
         watch.watchdirs = function(path, opts, callback)
             -- Check if the path exists before watching
-            local stat = vim.loop.fs_stat(path)
+            local stat = vim.uv.fs_stat(path)
             if not stat then
                 -- Path doesn't exist, return a no-op cancel function
                 return function() end
