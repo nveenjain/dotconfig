@@ -2,6 +2,12 @@
 -- terminal query that hangs in tmux with allow-passthrough
 vim.o.background = "dark"
 
+-- Disable unused remote-host providers (this is a Lua-only config) to silence :checkhealth
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_node_provider = 0
+vim.g.loaded_python3_provider = 0
+
 vim.opt.nu = true
 vim.opt.relativenumber = true
 

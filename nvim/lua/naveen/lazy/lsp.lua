@@ -11,7 +11,7 @@ return {
         "hrsh7th/nvim-cmp",
         "L3MON4D3/LuaSnip",
         "saadparwaiz1/cmp_luasnip",
-        "j-hui/fidget.nvim",
+        "b0o/schemastore.nvim",
     },
 
     -- disable for vscode
@@ -25,7 +25,7 @@ return {
             vim.lsp.protocol.make_client_capabilities(),
             cmp_lsp.default_capabilities())
 
-        require("fidget").setup({})
+        -- fidget (LSP progress + toasts) is owned by lazy/fidget.lua
 
         -- Organize imports on save via gopls (adds missing, removes unused)
         vim.api.nvim_create_autocmd("LspAttach", {
@@ -62,7 +62,7 @@ return {
         require("mason").setup()
         require("mason-lspconfig").setup({
             ensure_installed = {
-                'ts_ls', 'golangci_lint_ls', 'gopls', 'lua_ls', 'rust_analyzer', 'jsonls', 'pyright'
+                'ts_ls', 'golangci_lint_ls', 'gopls', 'lua_ls', 'rust_analyzer', 'jsonls', 'pyright', 'yamlls'
             },
             handlers = {
                 function(server_name) -- default handler (optional)
@@ -110,7 +110,11 @@ return {
                                     unusedparams = true,
                                 },
                                 ["local"] = get_local_module(),
-                                directoryFilters = { "-vendor", "-node_modules", "-testdata", "-.git" },
+                                directoryFilters = {
+                                    "-vendor", "-node_modules", "-testdata", "-.git",
+                                    "-.claude", "-.ai", "-.venv", "-.mypy_cache", "-.ruff_cache",
+                                    "-.cursor", "-.codex", "-.turbo", "-.pytest_cache",
+                                },
                             },
                         },
                     }
@@ -126,6 +130,21 @@ return {
                             python = {
                                 venvPath = ".",
                                 venv = ".venv",
+                            },
+                        },
+                    }
+                end,
+                ["yamlls"] = function()
+                    local lspconfig = require("lspconfig")
+                    lspconfig.yamlls.setup {
+                        capabilities = capabilities,
+                        settings = {
+                            yaml = {
+                                -- Use SchemaStore catalog (k8s, GH Actions, etc.);
+                                -- custom golden case.yaml files just get no schema.
+                                schemaStore = { enable = false, url = "" },
+                                schemas = require("schemastore").yaml.schemas(),
+                                keyOrdering = false,
                             },
                         },
                     }

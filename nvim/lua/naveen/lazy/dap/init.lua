@@ -109,19 +109,6 @@ return {
                 end
 
                 pcall(dapui.open, { reset = true })
-
-                -- Re-enable Copilot in code buffers when debugging starts
-                vim.api.nvim_create_autocmd("BufEnter", {
-                    group = vim.api.nvim_create_augroup("NavDapCopilot", { clear = true }),
-                    callback = function()
-                        local ft = vim.bo.filetype
-                        if not constants.DAP_FILETYPES[ft] and ft ~= "" then
-                            pcall(function()
-                                require("copilot.command").enable()
-                            end)
-                        end
-                    end,
-                })
             end
 
             -- Only close DAP UI when the last session ends (multi-session aware)
@@ -129,7 +116,6 @@ return {
                 local remaining = vim.tbl_count(dap.sessions())
                 if remaining <= 1 then
                     dapui.close()
-                    pcall(vim.api.nvim_del_augroup_by_name, "NavDapCopilot")
                 end
             end
 

@@ -34,14 +34,4 @@ M.SPECIAL_FILETYPES = {
     "spectre_panel",
 }
 
--- DAP filetypes (for Copilot integration)
-M.DAP_FILETYPES = {
-    ["dap-repl"] = true,
-    dapui_watches = true,
-    dapui_stacks = true,
-    dapui_breakpoints = true,
-    dapui_scopes = true,
-    dapui_console = true,
-}
-
 return M

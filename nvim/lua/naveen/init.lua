@@ -212,19 +212,3 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
     end,
 })
 
---------------------------------------------------------------------------------
--- DAP Auto-loading
---------------------------------------------------------------------------------
-
--- Auto-load DAP on startup if project has .nvim-dap.lua
-vim.api.nvim_create_autocmd("VimEnter", {
-    group = main_group,
-    callback = function()
-        vim.defer_fn(function()
-            local dap_config = vim.fn.getcwd() .. "/.nvim-dap.lua"
-            if vim.fn.filereadable(dap_config) == 1 then
-                require("dap")
-            end
-        end, constants.DEFER_DELAY)
-    end,
-})

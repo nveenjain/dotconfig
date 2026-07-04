@@ -4,7 +4,6 @@ return {
     event = { "BufReadPost", "BufNewFile" },
     dependencies = {
       "folke/snacks.nvim",
-      "zbirenbaum/copilot.lua",
     },
     opts = {
       -- Next Edit Suggestions configuration

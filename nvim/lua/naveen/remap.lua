@@ -95,7 +95,7 @@ vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux new tmux-sessionizer<CR>", { des
 -- File Explorer
 --------------------------------------------------------------------------------
 
-vim.keymap.set("n", "<leader>pv", vim.cmd.Vex, { desc = "Explorer: Vertical split" })
+-- <leader>e (toggle) and <leader>pv (reveal) are owned by neo-tree (see lazy/neo-tree.lua)
 
 --------------------------------------------------------------------------------
 -- Git (Gitsigns)
@@ -114,7 +114,7 @@ vim.keymap.set("n", "<leader>gd", ":Gitsigns diffthis<CR>", { silent = true, des
 --------------------------------------------------------------------------------
 
 vim.keymap.set("n", "<leader>gc", ":Git checkout ", { desc = "Git: Checkout branch" })
-vim.keymap.set("n", "<leader>gB", ":Git branch<CR>", { desc = "Git: List branches" })
+vim.keymap.set("n", "<leader>gl", ":Git branch<CR>", { desc = "Git: List branches" })
 vim.keymap.set("n", "<leader>gm", ":Git checkout main<CR>", { desc = "Git: Checkout main" })
 vim.keymap.set("n", "<leader>gM", ":Git checkout master<CR>", { desc = "Git: Checkout master" })
 
@@ -151,7 +151,7 @@ end, { desc = "Window: Toggle maximize" })
 -- Diagnostics
 --------------------------------------------------------------------------------
 
-vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float, { desc = "Diagnostic: Open float" })
+-- <leader>e is owned by neo-tree; diagnostic float is on <leader>vd (LSP section); loclist on <leader>q
 vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, { desc = "Diagnostic: Previous" })
 vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, { desc = "Diagnostic: Next" })
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Diagnostic: To loclist" })

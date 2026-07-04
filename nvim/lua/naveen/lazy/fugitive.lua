@@ -57,13 +57,13 @@ return {
         })
 
         -- Git branch creation
-        vim.keymap.set("n", "<leader>gb", function()
+        vim.keymap.set("n", "<leader>gn", function()
             vim.ui.input({ prompt = "New branch name: " }, function(branch_name)
                 if branch_name and branch_name ~= "" then
                     vim.cmd("Git checkout -b " .. branch_name)
                 end
             end)
-        end, { desc = "Git: Create branch" })
+        end, { desc = "Git: New branch" })
 
         -- Git worktree keybindings
         local worktree = require("naveen.git-worktree")

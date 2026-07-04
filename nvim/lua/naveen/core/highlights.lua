@@ -50,6 +50,7 @@ M.colors = {
         topdelete = "#ff0000",
         changedelete = "#ff8800",
         untracked = "#808080",  -- Gray
+        blame = "#5c6370",      -- Dim grey for inline blame
     },
 }
 
@@ -128,6 +129,9 @@ function M.setup_gitsigns()
     vim.api.nvim_set_hl(0, "GitSignsTopDelete", { fg = c.topdelete })
     vim.api.nvim_set_hl(0, "GitSignsChangeDelete", { fg = c.changedelete })
     vim.api.nvim_set_hl(0, "GitSignsUntracked", { fg = c.untracked })
+
+    -- Inline current-line blame: dim grey, italic for a transparent look
+    vim.api.nvim_set_hl(0, "GitSignsCurrentLineBlame", { fg = c.blame, italic = true })
 end
 
 --- Set up neo-tree git status highlights
